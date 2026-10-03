@@ -213,7 +213,8 @@ new #[Layout('layouts.app', ['title' => 'Ubah trade'])] class extends Component
 @php
     $p = $this->preview;
     $nada = fn (?float $v) => $v === null ? 'text-ink-faint' : ($v > 0 ? 'text-viz-positive' : ($v < 0 ? 'text-viz-negative' : 'text-ink'));
-    $uang = fn (?float $v) => $v === null ? null : ($v < 0 ? '-' : '').number_format(abs($v), 2);
+    // Simbol mengikuti dashboard: seluruh instrumen dikutip terhadap USD.
+    $uang = fn (?float $v) => $v === null ? null : ($v < 0 ? '-' : '').'$'.number_format(abs($v), 2);
 @endphp
 
 <div class="space-y-6">

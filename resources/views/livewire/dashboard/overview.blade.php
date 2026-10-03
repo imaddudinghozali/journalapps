@@ -77,6 +77,31 @@ new class extends Component
         return $sel;
     }
 
+    /**
+     * Petak kalender dipecah per minggu, lengkap dengan totalnya.
+     *
+     * Total mingguan dihitung dari sel yang masuk bulan ini saja. Sel luapan
+     * dari bulan sebelum dan sesudahnya ikut tergambar supaya petaknya utuh,
+     * tapi menjumlahkannya akan membuat satu trade terhitung dua kali - sekali
+     * di bulannya sendiri, sekali lagi sebagai luapan di bulan tetangga.
+     */
+    public function calendarWeeks(): array
+    {
+        $minggu = [];
+
+        foreach (array_chunk($this->calendar(), 7) as $tujuhHari) {
+            $milikBulanIni = array_filter($tujuhHari, fn (array $s) => $s['inMonth'] && $s['pnl'] !== null);
+
+            $minggu[] = [
+                'days' => $tujuhHari,
+                'pnl' => $milikBulanIni === [] ? null : array_sum(array_column($milikBulanIni, 'pnl')),
+                'count' => array_sum(array_column($milikBulanIni, 'count')),
+            ];
+        }
+
+        return $minggu;
+    }
+
     public function monthLabel(): string
     {
         $nama = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
@@ -90,7 +115,21 @@ new class extends Component
 @php
     $s = $this->summary;
 
-    $uang = fn (?float $v) => $v === null ? null : ($v < 0 ? '-' : '').number_format(abs($v), 2);
+    /*
+    | Simbol mata uang dipatri sebagai dolar karena seluruh instrumen di
+    | aplikasi ini dikutip terhadap USD (XAUUSD, EURUSD, BTCUSD). Begitu ada
+    | pengguna yang akunnya bukan USD, ini harus naik jadi pengaturan di
+    | profil - dicatat di README bagian "Yang belum dikerjakan".
+    */
+    $uang = fn (?float $v) => $v === null ? null : ($v < 0 ? '-' : '').'$'.number_format(abs($v), 2);
+
+    // Varian bertanda untuk angka yang arahnya penting. Plus eksplisit di
+    // angka positif membuat arahnya terbaca tanpa harus mengandalkan warna -
+    // syarat agar pembaca buta warna tetap mendapat informasinya.
+    $uangBertanda = fn (?float $v) => $v === null
+        ? null
+        : ($v > 0 ? '+' : ($v < 0 ? '-' : '')).'$'.number_format(abs($v), 2);
+
     $nadaAngka = fn (?float $v) => $v === null ? 'text-ink' : ($v > 0 ? 'text-viz-positive' : ($v < 0 ? 'text-viz-negative' : 'text-ink'));
 
     // Garis kumulatif disiapkan di PHP: satu seri, satu sumbu, tanpa pustaka chart.
@@ -112,7 +151,18 @@ new class extends Component
         $yNol = round($pad + (1 - ((0 - $min) / $rentang)) * ($H - 2 * $pad), 1);
         $akhir = end($nilai);
         $akhirKoordinat = end($koordinat);
+        $awalKoordinat = $koordinat[0];
         $warnaGaris = $akhir >= 0 ? 'rgb(var(--viz-positive))' : 'rgb(var(--viz-negative))';
+
+        // Area di bawah garis, ditutup ke garis impas - bukan ke dasar kanvas.
+        // Ditutup ke dasar, bagian yang merugi akan ikut terisi dan terbaca
+        // seolah tetap ada hasilnya.
+        $area = 'M '.$awalKoordinat[0].','.$yNol
+            .' L '.implode(' L ', array_map(fn ($p) => $p[0].','.$p[1], $koordinat))
+            .' L '.$akhirKoordinat[0].','.$yNol.' Z';
+
+        $tglAwal = $titik[0]['date'] ?? null;
+        $tglAkhir = $titik[count($titik) - 1]['date'] ?? null;
     }
 @endphp
 
@@ -166,24 +216,33 @@ new class extends Component
              ringkasan yang sama, jadi dipisah garis rambut, bukan jarak. --}}
         <div class="blok overflow-hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
             <div class="sel-angka p-5">
-                <div class="text-sm text-ink-muted">P&amp;L bersih</div>
-                <div class="mt-2 text-3xl font-semibold tabular {{ $nadaAngka($s->netPnl) }}">
-                    {{ $uang($s->netPnl) }}
+                <div class="flex items-center gap-2 text-sm text-ink-muted">
+                    <x-phosphor-coins class="h-4 w-4 shrink-0 text-ink-faint" aria-hidden="true" />
+                    P&amp;L bersih
+                </div>
+                <div class="mt-2 text-3xl font-semibold tracking-tight tabular {{ $nadaAngka($s->netPnl) }}">
+                    {{ $uangBertanda($s->netPnl) }}
                 </div>
                 <div class="mt-1 text-xs text-ink-faint">dari {{ $s->closedCount }} trade tertutup</div>
             </div>
 
             <div class="sel-angka p-5">
-                <div class="text-sm text-ink-muted">Rata-rata per trade</div>
-                <div class="mt-2 text-3xl font-semibold tabular {{ $nadaAngka($s->avgTrade) }}">
-                    {{ $uang($s->avgTrade) ?? 'belum ada' }}
+                <div class="flex items-center gap-2 text-sm text-ink-muted">
+                    <x-phosphor-equals class="h-4 w-4 shrink-0 text-ink-faint" aria-hidden="true" />
+                    Rata-rata per trade
+                </div>
+                <div class="mt-2 text-3xl font-semibold tracking-tight tabular {{ $nadaAngka($s->avgTrade) }}">
+                    {{ $uangBertanda($s->avgTrade) ?? 'belum ada' }}
                 </div>
                 <div class="mt-1 text-xs text-ink-faint">{{ $s->openCount }} masih terbuka</div>
             </div>
 
             <div class="sel-angka p-5">
-                <div class="text-sm text-ink-muted">Rata-rata trade menang</div>
-                <div class="mt-2 text-3xl font-semibold tabular {{ $s->avgWin === null ? 'text-ink-faint' : 'text-viz-positive' }}">
+                <div class="flex items-center gap-2 text-sm text-ink-muted">
+                    <x-phosphor-trend-up class="h-4 w-4 shrink-0 text-ink-faint" aria-hidden="true" />
+                    Rata-rata trade menang
+                </div>
+                <div class="mt-2 text-3xl font-semibold tracking-tight tabular {{ $s->avgWin === null ? 'text-ink-faint' : 'text-viz-positive' }}">
                     {{ $uang($s->avgWin) ?? 'belum ada' }}
                 </div>
                 <div class="mt-1 text-xs text-ink-faint">
@@ -192,8 +251,11 @@ new class extends Component
             </div>
 
             <div class="sel-angka p-5">
-                <div class="text-sm text-ink-muted">Rata-rata trade kalah</div>
-                <div class="mt-2 text-3xl font-semibold tabular {{ $s->avgLoss === null ? 'text-ink-faint' : 'text-viz-negative' }}">
+                <div class="flex items-center gap-2 text-sm text-ink-muted">
+                    <x-phosphor-trend-down class="h-4 w-4 shrink-0 text-ink-faint" aria-hidden="true" />
+                    Rata-rata trade kalah
+                </div>
+                <div class="mt-2 text-3xl font-semibold tracking-tight tabular {{ $s->avgLoss === null ? 'text-ink-faint' : 'text-viz-negative' }}">
                     {{ $uang($s->avgLoss) ?? 'belum ada' }}
                 </div>
                 <div class="mt-1 text-xs text-ink-faint">
@@ -231,11 +293,23 @@ new class extends Component
                 </div>
 
                 @if ($adaChart)
-                    <svg viewBox="0 0 {{ $W }} {{ $H }}" class="mt-3 w-full h-[150px]" role="img"
+                    <svg viewBox="0 0 {{ $W }} {{ $H }}" class="mt-3 w-full h-[150px]" role="img" preserveAspectRatio="none"
                          aria-label="Garis P&amp;L kumulatif dari {{ count($nilai) }} trade tertutup, berakhir di {{ $uang($akhir) }}">
+                        <defs>
+                            {{-- Area memudar ke arah garis impas, jadi ketebalannya
+                                 sendiri sudah membawa arti: makin jauh dari impas,
+                                 makin pekat. --}}
+                            <linearGradient id="isi-pnl" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="{{ $warnaGaris }}" stop-opacity="0.22" />
+                                <stop offset="100%" stop-color="{{ $warnaGaris }}" stop-opacity="0.02" />
+                            </linearGradient>
+                        </defs>
+
+                        <path d="{{ $area }}" fill="url(#isi-pnl)" />
+
                         <line x1="0" y1="{{ $yNol }}" x2="{{ $W }}" y2="{{ $yNol }}"
                               stroke="rgb(var(--line-strong))" stroke-width="1" stroke-dasharray="3 3" />
-                        <polyline points="{{ $garis }}" fill="none" stroke-width="2"
+                        <polyline points="{{ $garis }}" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"
                                   stroke-linejoin="round" stroke-linecap="round" stroke="{{ $warnaGaris }}" />
                         @foreach ($koordinat as $i => $p)
                             <circle cx="{{ $p[0] }}" cy="{{ $p[1] }}" r="8" fill="transparent">
@@ -244,6 +318,12 @@ new class extends Component
                         @endforeach
                         <circle cx="{{ $akhirKoordinat[0] }}" cy="{{ $akhirKoordinat[1] }}" r="3.5" fill="{{ $warnaGaris }}" />
                     </svg>
+
+                    <div class="mt-2 flex items-baseline justify-between gap-4 text-xs text-ink-faint tabular">
+                        <span>{{ $tglAwal }}</span>
+                        <span>{{ $tglAkhir }}</span>
+                    </div>
+
                     <p class="mt-2 text-xs text-ink-faint">
                         Garis putus-putus adalah titik impas. Arahkan kursor ke satu titik untuk melihat tanggalnya.
                     </p>
@@ -281,15 +361,21 @@ new class extends Component
              wire:loading menimpa display, dan grid yang dipaksa jadi
              inline-block akan runtuh jadi satu kolom. --}}
         <div class="w-full" wire:loading wire:target="previousMonth,nextMonth" aria-hidden="true">
-            <div class="mt-4 grid grid-cols-7 gap-px bg-line rounded-md overflow-hidden border border-line">
-                @foreach (['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'] as $hari)
+            <div class="mt-4 grid grid-cols-8 gap-px bg-line rounded-md overflow-hidden border border-line">
+                @foreach (['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Minggu'] as $hari)
                     <div class="bg-surface-sunken px-2 py-2 text-xs font-medium text-ink-muted text-center">{{ $hari }}</div>
                 @endforeach
 
-                @for ($i = 0; $i < 42; $i++)
-                    <div class="min-h-[84px] bg-surface p-2">
+                @for ($i = 0; $i < 48; $i++)
+                    @php
+                        // Bentuk panjang, bukan bentuk singkat berkurung: yang
+                        // singkat gagal terkompilasi untuk ekspresi ini dan
+                        // ikut merusak sisa berkas.
+                        $kolomTotal = $i % 8 === 7;
+                    @endphp
+                    <div class="min-h-[84px] p-2 {{ $kolomTotal ? 'bg-surface-sunken' : 'bg-surface' }}">
                         <div class="ms-auto h-3 w-4 rangka"></div>
-                        @if ($i % 5 === 2)
+                        @if ($kolomTotal || $i % 5 === 2)
                             <div class="mt-2 h-4 w-14 rangka"></div>
                             <div class="mt-1 h-2.5 w-10 rangka"></div>
                         @endif
@@ -298,27 +384,55 @@ new class extends Component
             </div>
         </div>
 
-        <div class="mt-4 grid grid-cols-7 gap-px bg-line rounded-md overflow-hidden border border-line"
+        <div class="mt-4 grid grid-cols-8 gap-px bg-line rounded-md overflow-hidden border border-line"
              wire:loading.remove wire:target="previousMonth,nextMonth">
             @foreach (['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'] as $hari)
                 <div class="bg-surface-sunken px-2 py-2 text-xs font-medium text-ink-muted text-center">{{ $hari }}</div>
             @endforeach
+            <div class="bg-surface-sunken px-2 py-2 text-xs font-medium text-ink-muted text-center">Minggu</div>
 
-            @foreach ($this->calendar() as $sel)
-                @php
-                    $p = $sel['pnl'];
-                    // Divergen: dua kutub dengan titik tengah netral. Angkanya
-                    // selalu ikut tercetak, jadi warna tidak pernah sendirian
-                    // memikul arti.
-                    $latar = $p === null
-                        ? 'bg-surface'
-                        : ($p > 0 ? 'bg-viz-positive/10' : ($p < 0 ? 'bg-viz-negative/10' : 'bg-viz-neutral/60'));
-                @endphp
-                <div class="min-h-[84px] p-2 {{ $latar }} {{ $sel['inMonth'] ? '' : 'opacity-40' }}">
-                    <div class="text-xs text-ink-faint text-right tabular">{{ $sel['date']->day }}</div>
-                    @if ($p !== null)
-                        <div class="mt-1 text-sm font-semibold tabular {{ $nadaAngka($p) }}">{{ $uang($p) }}</div>
-                        <div class="text-[11px] text-ink-faint">{{ $sel['count'] }} trade</div>
+            @foreach ($this->calendarWeeks() as $iMinggu => $minggu)
+                @foreach ($minggu['days'] as $sel)
+                    @php
+                        $p = $sel['pnl'];
+                        // Divergen: dua kutub dengan titik tengah netral. Angkanya
+                        // selalu ikut tercetak, jadi warna tidak pernah sendirian
+                        // memikul arti.
+                        $latar = $p === null
+                            ? 'bg-surface'
+                            : ($p > 0 ? 'bg-viz-positive/10' : ($p < 0 ? 'bg-viz-negative/10' : 'bg-viz-neutral/60'));
+                    @endphp
+                    <div class="relative min-h-[84px] p-2 {{ $latar }} {{ $sel['inMonth'] ? '' : 'opacity-40' }}"
+                         wire:key="sel-{{ $sel['date']->toDateString() }}">
+                        <div class="flex items-center justify-end gap-1">
+                            @if ($sel['date']->isToday())
+                                {{-- Hari ini ditandai titik, bukan latar berwarna:
+                                     latar di sel ini sudah dipakai menyatakan untung
+                                     atau rugi, dan dua arti pada satu properti
+                                     berarti salah satunya pasti terbaca keliru. --}}
+                                <span class="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden="true"></span>
+                                <span class="sr-only">Hari ini,</span>
+                            @endif
+                            <span class="text-xs text-ink-faint tabular">{{ $sel['date']->day }}</span>
+                        </div>
+
+                        @if ($p !== null)
+                            <div class="mt-1 text-sm font-semibold tabular {{ $nadaAngka($p) }}">{{ $uangBertanda($p) }}</div>
+                            <div class="text-[11px] text-ink-faint">{{ $sel['count'] }} trade</div>
+                        @endif
+                    </div>
+                @endforeach
+
+                {{-- Total mingguan. Satu minggu adalah satuan yang benar-benar
+                     dipakai orang saat meninjau: cukup panjang untuk meredam
+                     keberuntungan harian, cukup pendek untuk masih diingat. --}}
+                <div class="min-h-[84px] bg-surface-sunken p-2" wire:key="minggu-{{ $iMinggu }}">
+                    <div class="text-right text-[11px] text-ink-faint">M{{ $iMinggu + 1 }}</div>
+                    @if ($minggu['pnl'] !== null)
+                        <div class="mt-1 text-sm font-semibold tabular {{ $nadaAngka($minggu['pnl']) }}">
+                            {{ $uangBertanda($minggu['pnl']) }}
+                        </div>
+                        <div class="text-[11px] text-ink-faint">{{ $minggu['count'] }} trade</div>
                     @endif
                 </div>
             @endforeach

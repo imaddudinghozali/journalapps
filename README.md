@@ -16,7 +16,43 @@ Tujuannya menjawab satu pertanyaan yang tidak bisa dijawab jurnal biasa: **apaka
 | 3 — Pencatatan trade dengan checklist | Selesai |
 | 4 — Peringatan kepatuhan rendah | Selesai |
 | 5 — Laporan kepatuhan vs P&L | Selesai |
-| 6 — Baseline dari jurnal lama | Belum |
+| 6 — Baseline dari jurnal lama | Dibatalkan — datanya tidak ada |
+
+## Yang belum dikerjakan
+
+Diurutkan dari yang paling menghalangi, bukan dari yang paling mudah.
+
+### Menghalangi rilis
+
+| # | Hal | Kondisi sekarang | Akibat kalau dibiarkan |
+|---|---|---|---|
+| 1 | Pengirim email | `MAIL_MAILER=log` | Verifikasi email aktif, jadi **setiap orang yang mendaftar terkunci selamanya** di layar "cek emailmu" — tanpa satu pun pesan galat muncul. Reset sandi juga mati total. Kegagalan paling senyap di daftar ini |
+| 2 | Mode debug | `APP_ENV=local`, `APP_DEBUG=true` | Halaman galat menampilkan stack trace, query SQL beserta parameternya, dan seluruh isi `.env` termasuk `APP_KEY` |
+| 3 | Pengguna basis data | `root` tanpa sandi | Kredensial bawaan; butuh pengguna khusus berhak minimum |
+
+Langkah lengkap ketiganya ada di [DEPLOY.md](DEPLOY.md). Semuanya butuh server
+tujuan dan kredensial, jadi tidak bisa diselesaikan dari repo saja.
+
+### Belum ada sama sekali
+
+| Hal | Catatan |
+|---|---|
+| **Cadangan basis data** | Tidak ada apa pun. Jurnal bertahun-tahun yang hilang tidak bisa dibuat ulang dari mana pun. Ini risiko terbesar yang tidak masuk daftar blocker |
+| **Data nyata** | 16 trade sintetis di akun fixture. Hipotesis produknya — kepatuhan berkorelasi dengan P&L — belum diuji dengan satu pun trade sungguhan |
+| **Tampilan detail trade** | Hanya ada `/trades/{id}/edit`. Untuk sekadar melihat, pengguna harus masuk ke mode ubah |
+| **Mata uang akun** | Angka uang diasumsikan dolar. Kalau ada pengguna yang akunnya bukan USD, ini harus jadi pengaturan, bukan simbol yang dipatri di template |
+
+### Terjemahan yang belum selesai
+
+Halaman login, registrasi, lupa sandi, verifikasi email, dan dua bagian di
+`/profile` masih memakai teks Inggris bawaan Breeze, padahal CLAUDE.md
+mewajibkan Bahasa Indonesia untuk teks antarmuka.
+
+### Sudah selesai dan tidak perlu diulang
+
+Seluruh 10 task pembenahan UI/UX ([`.claude/plans/ui-redesign.plan.md`](.claude/plans/ui-redesign.plan.md)),
+plus empat blocker rilis: pembatasan laju pendaftaran, kebijakan privasi,
+pengerasan cookie sesi, dan `.env.production.example`.
 
 ## Stack
 

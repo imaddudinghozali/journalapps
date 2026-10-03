@@ -26,6 +26,16 @@ new class extends Component
 };
 ?>
 
+@php
+    // Sama persis dengan dashboard dan halaman ubah trade: satu angka uang
+    // tidak boleh tampil dengan format berbeda tergantung halamannya.
+    $uang = fn (?float $v) => $v === null
+        ? null
+        : ($v > 0 ? '+' : ($v < 0 ? '-' : '')).'$'.number_format(abs($v), 2);
+
+    $nada = fn (?float $v) => $v === null ? 'text-ink-muted' : ($v > 0 ? 'text-viz-positive' : ($v < 0 ? 'text-viz-negative' : 'text-ink'));
+@endphp
+
 {{-- Blok, bukan panel: di halaman ini yang pokok adalah form pencatatan di
      atasnya. Daftar ini bacaan pendukung. --}}
 <div class="blok p-4 sm:p-8">
@@ -63,10 +73,10 @@ new class extends Component
                             <td class="py-2 pe-4 text-ink-muted tabular">
                                 {{ $trade->isUnscored() ? 'tanpa skor' : $trade->compliance_score.'%' }}
                             </td>
-                            <td class="py-2 pe-4 text-ink-muted">
-                                {{ $trade->isClosed() ? number_format((float) $trade->pnl_amount, 2) : 'terbuka' }}
+                            <td class="py-2 pe-4 tabular {{ $trade->isClosed() ? $nada((float) $trade->pnl_amount) : 'text-ink-faint' }}">
+                                {{ $trade->isClosed() ? $uang((float) $trade->pnl_amount) : 'terbuka' }}
                             </td>
-                            <td class="py-2 pe-4 text-ink-muted">
+                            <td class="py-2 pe-4 tabular {{ $nada($trade->rMultiple()) }}">
                                 {{ $trade->rMultiple() === null ? 'belum ada' : number_format($trade->rMultiple(), 2).'R' }}
                             </td>
                             <td class="py-2 text-end">
