@@ -47,7 +47,11 @@ return [
     |
     */
 
-    'encrypt' => env('SESSION_ENCRYPT', false),
+    // Aman secara bawaan di produksi, dan tetap bisa ditimpa lewat .env.
+    // Sebelumnya nilainya false di mana pun, jadi satu baris .env yang lupa
+    // ditulis saat deploy berarti sesi tidak terenkripsi tanpa ada yang tahu.
+    // Di lingkungan local nilainya tidak berubah, jadi dev di HTTP tetap jalan.
+    'encrypt' => env('SESSION_ENCRYPT', env('APP_ENV') === 'production'),
 
     /*
     |--------------------------------------------------------------------------
@@ -169,7 +173,10 @@ return [
     |
     */
 
-    'secure' => env('SESSION_SECURE_COOKIE'),
+    // Tanpa ini cookie sesi ikut terkirim lewat HTTP biasa, dan siapa pun di
+    // jaringan yang sama bisa membacanya. Di produksi nilainya true kecuali
+    // sengaja dimatikan; di local tetap null supaya http://localhost jalan.
+    'secure' => env('SESSION_SECURE_COOKIE', env('APP_ENV') === 'production' ?: null),
 
     /*
     |--------------------------------------------------------------------------

@@ -5,6 +5,9 @@ use Livewire\Volt\Volt;
 
 Route::view('/', 'welcome');
 
+// Terbuka untuk tamu: orang berhak tahu apa yang disimpan SEBELUM mendaftar.
+Route::view('privasi', 'privasi')->name('privasi');
+
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
     ->name('dashboard');

@@ -246,8 +246,13 @@
 
         <footer class="border-t border-line">
             <div class="max-w-6xl mx-auto px-6 py-10 flex flex-wrap items-center justify-between gap-4 text-sm text-ink-faint">
-                <span>Jurnal pribadi. Datanya tinggal di mesinmu sendiri.</span>
-                <span class="font-mono text-xs">JournalApps</span>
+                <span>Jurnal pribadi. Datamu tidak dijual, tidak dibagikan, dan tidak dipakai melatih apa pun.</span>
+                <span class="flex items-center gap-5">
+                    <a href="{{ route('privasi') }}" class="underline underline-offset-4 hover:text-ink transition-colors">
+                        Kebijakan privasi
+                    </a>
+                    <span class="font-mono text-xs">JournalApps</span>
+                </span>
             </div>
         </footer>
 

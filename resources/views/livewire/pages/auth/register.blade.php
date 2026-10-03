@@ -1,10 +1,13 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Auth\Events\Lockout;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\Rules;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
 
@@ -26,13 +29,51 @@ new #[Layout('layouts.guest')] class extends Component
             'password' => ['required', 'string', 'confirmed', Rules\Password::defaults()],
         ]);
 
+        // Dicek SETELAH validasi: percobaan yang gagal validasi tidak membuat
+        // apa pun, jadi tidak adil kalau ikut memakan jatah. Salah ketik email
+        // beberapa kali tidak boleh mengunci orang dari mendaftar.
+        $this->pastikanTidakDibatasi();
+
         $validated['password'] = Hash::make($validated['password']);
 
         event(new Registered($user = User::create($validated)));
 
+        RateLimiter::hit($this->kunciLaju(), 60 * 60);
+
         Auth::login($user);
 
         $this->redirect(route('dashboard', absolute: false), navigate: true);
+    }
+
+    /**
+     * Lima akun per jam per alamat IP.
+     *
+     * Login dibatasi karena menebak sandi itu murah. Pendaftaran dibatasi
+     * karena justru lebih mahal: tiap percobaan yang berhasil menulis baris
+     * baru di database dan memicu satu email verifikasi.
+     *
+     * Angkanya sengaja longgar. Satu rumah atau satu kantor di balik satu IP
+     * publik harus tetap bisa membuat beberapa akun di hari yang sama.
+     */
+    protected function pastikanTidakDibatasi(): void
+    {
+        if (! RateLimiter::tooManyAttempts($this->kunciLaju(), 5)) {
+            return;
+        }
+
+        event(new Lockout(request()));
+
+        $detik = RateLimiter::availableIn($this->kunciLaju());
+
+        throw ValidationException::withMessages([
+            'email' => 'Terlalu banyak pendaftaran dari jaringan ini. Coba lagi dalam '
+                .$detik.' detik.',
+        ]);
+    }
+
+    protected function kunciLaju(): string
+    {
+        return 'daftar|'.request()->ip();
     }
 }; ?>
 
@@ -84,5 +125,14 @@ new #[Layout('layouts.guest')] class extends Component
                 {{ __('Register') }}
             </x-primary-button>
         </div>
+
+        {{-- Tautannya ada di sini, bukan cuma di footer halaman depan: inilah
+             titik orang menyerahkan datanya, jadi di sinilah ia berhak tahu
+             apa yang disimpan. --}}
+        <p class="mt-6 text-xs text-ink-faint">
+            Dengan mendaftar, kamu menyetujui
+            <a href="{{ route('privasi') }}" class="underline underline-offset-2 hover:text-ink-muted transition-colors">kebijakan privasi</a>.
+            Singkatnya: datanya cuma dipakai menampilkan jurnalmu sendiri, dan bisa kamu hapus seluruhnya kapan saja.
+        </p>
     </form>
 </div>
