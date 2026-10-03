@@ -84,10 +84,10 @@ php artisan serve
 
 Buka `http://127.0.0.1:8000`, lalu daftar akun.
 
-**3. Lewati verifikasi email (hanya untuk dev lokal).** Verifikasi diwajibkan karena aplikasi ini menyimpan data finansial, tapi di lokal emailnya hanya ditulis ke log. Daripada menggali `storage/logs/laravel.log`, tandai akunmu terverifikasi langsung:
+**3. Lewati verifikasi email (hanya untuk dev lokal).** Verifikasi diwajibkan karena aplikasi ini menyimpan data finansial, tapi di lokal emailnya hanya ditulis ke log. Daripada menggali `storage/logs/laravel.log`, tandai akun yang **baru saja kamu daftarkan** sebagai terverifikasi:
 
 ```bash
-php artisan tinker --execute="App\Models\User::first()->markEmailAsVerified();"
+php artisan tinker --execute="App\Models\User::latest()->first()->markEmailAsVerified();"
 ```
 
 **4. Urutan pakainya.** Buat setup di `/setups` lengkap dengan rules-nya, catat trade di `/trades`, lihat hasilnya di `/reports`.

@@ -33,10 +33,10 @@ new class extends Component
 
 <section>
     <header>
-        <h2 class="text-lg font-medium text-gray-900">Ambang peringatan kepatuhan</h2>
-        <p class="mt-1 text-sm text-gray-600">
+        <h2 class="text-lg font-medium text-ink">Ambang peringatan kepatuhan</h2>
+        <p class="mt-1 text-sm text-ink-muted">
             Saat mencatat trade, kamu diperingatkan bila skor kepatuhan di bawah angka ini. Peringatan tidak pernah
-            memblokir penyimpanan — trade yang melanggar aturan justru yang paling perlu tercatat.
+            memblokir penyimpanan. Trade yang melanggar aturan justru yang paling perlu tercatat.
         </p>
     </header>
 

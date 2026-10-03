@@ -1,3 +1,137 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/*
+|--------------------------------------------------------------------------
+| Token warna
+|--------------------------------------------------------------------------
+|
+| Satu set nama semantik, dua mode. Blade memakai nama ini (bg-surface,
+| text-ink, border-line) dan tidak pernah menyebut warna mentah, sehingga
+| tidak ada duplikasi "dark:" yang tersebar di puluhan file.
+|
+| Nilainya RGB terpisah spasi supaya Tailwind tetap bisa menerapkan opasitas.
+|
+| Keluarga netral: zinc (dingin). Sebelumnya proyek ini mencampur gray dan
+| zinc sekaligus — dua keluarga abu berbeda dalam satu halaman.
+|
+| Aksen sengaja biru baja, bukan hijau atau merah: dua warna itu sudah punya
+| arti untung dan rugi di produk ini. Aksen yang ikut berwarna hijau akan
+| terbaca sebagai perayaan, dan itu bertentangan dengan maksud produknya.
+|
+*/
+
+@layer base {
+    :root {
+        color-scheme: light;
+
+        --bg: 250 250 250;
+        --surface: 255 255 255;
+        --surface-sunken: 244 244 245;
+
+        --line: 228 228 231;
+        --line-strong: 212 212 216;
+
+        --ink: 24 24 27;
+        --ink-muted: 82 82 91;
+        --ink-faint: 113 113 122;
+
+        --accent: 30 64 175;
+        --accent-hover: 30 58 138;
+        --accent-contrast: 255 255 255;
+        --accent-soft: 219 234 254;
+
+        --warn: 146 64 14;
+        --warn-soft: 254 249 235;
+        --warn-line: 253 230 138;
+
+        --positive: 15 118 110;
+        --negative: 190 18 60;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            color-scheme: dark;
+
+            /* Bukan hitam murni: kedalaman hilang kalau latar #000. */
+            --bg: 9 9 11;
+            --surface: 24 24 27;
+            --surface-sunken: 39 39 42;
+
+            --line: 39 39 42;
+            --line-strong: 63 63 70;
+
+            --ink: 244 244 245;
+            --ink-muted: 161 161 170;
+            --ink-faint: 113 113 122;
+
+            --accent: 96 165 250;
+            --accent-hover: 147 197 253;
+            --accent-contrast: 9 9 11;
+            --accent-soft: 30 58 138;
+
+            --warn: 252 211 77;
+            --warn-soft: 41 37 24;
+            --warn-line: 120 83 20;
+
+            --positive: 45 212 191;
+            --negative: 251 113 133;
+        }
+    }
+
+    body {
+        @apply bg-bg text-ink;
+    }
+
+
+    /*
+    | Kontrol form disetel eksplisit, tidak mengandalkan color-scheme saja.
+    | Plugin @tailwindcss/forms memaksa latar putih, dan di mode gelap teks
+    | select serta datetime jadi nyaris tak terbaca.
+    |
+    | Input memakai surface-sunken supaya punya batas yang jelas terhadap
+    | kartu di atasnya, di kedua mode.
+    */
+    [type='text'],
+    [type='email'],
+    [type='password'],
+    [type='number'],
+    [type='search'],
+    [type='tel'],
+    [type='url'],
+    [type='date'],
+    [type='datetime-local'],
+    [type='time'],
+    select,
+    textarea {
+        background-color: rgb(var(--surface-sunken));
+        color: rgb(var(--ink));
+        border-color: rgb(var(--line-strong));
+    }
+
+    ::placeholder {
+        color: rgb(var(--ink-faint));
+        opacity: 1;
+    }
+
+    [type='checkbox'],
+    [type='radio'] {
+        background-color: rgb(var(--surface-sunken));
+        border-color: rgb(var(--line-strong));
+        color: rgb(var(--accent));
+    }
+
+    /*
+    | Skala sudut, satu aturan untuk seluruh aplikasi:
+    |   kartu dan panel  -> rounded-lg
+    |   kontrol (tombol, input, select) -> rounded-md
+    |   checkbox         -> rounded (bawaan)
+    | Jangan campur di luar aturan ini.
+    */
+
+    /* Angka dibaca sebagai besaran, bukan sebagai prosa. */
+    .tabular {
+        font-variant-numeric: tabular-nums;
+    }
+}

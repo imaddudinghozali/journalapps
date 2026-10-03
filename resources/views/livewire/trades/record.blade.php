@@ -208,10 +208,10 @@ new class extends Component
 };
 ?>
 
-<div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+<div class="p-4 sm:p-8 bg-surface shadow sm:rounded-lg">
     <header>
-        <h2 class="text-lg font-medium text-gray-900">Catat trade</h2>
-        <p class="mt-1 text-sm text-gray-600">
+        <h2 class="text-lg font-medium text-ink">Catat trade</h2>
+        <p class="mt-1 text-sm text-ink-muted">
             Centang hanya kriteria yang benar-benar terpenuhi saat kamu entry. Jawaban jujur di sini yang membuat
             laporannya ada gunanya.
         </p>
@@ -221,8 +221,8 @@ new class extends Component
         <div>
             <x-input-label for="tradingSetupId" value="Setup yang dipakai" />
             <select wire:model.live="tradingSetupId" id="tradingSetupId"
-                class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                <option value="">— pilih setup —</option>
+                class="mt-1 block w-full border-line-strong focus:border-accent focus:ring-accent rounded-md shadow-sm">
+                <option value="">Pilih setup</option>
                 @foreach ($this->activeSetups as $setup)
                     <option value="{{ $setup->id }}">{{ $setup->name }}</option>
                 @endforeach
@@ -230,18 +230,18 @@ new class extends Component
             <x-input-error class="mt-2" :messages="$errors->get('tradingSetupId')" />
 
             @if ($this->activeSetups->isEmpty())
-                <p class="mt-2 text-sm text-gray-500">
+                <p class="mt-2 text-sm text-ink-faint">
                     Belum ada setup aktif. Buat dulu di halaman <a href="{{ route('setups') }}" class="underline" wire:navigate>Setup &amp; Rules</a>.
                 </p>
             @endif
         </div>
 
         @if ($this->selectedSetup)
-            <div class="border border-gray-200 rounded-md p-4">
-                <h3 class="font-medium text-gray-900">Checklist</h3>
+            <div class="border border-line rounded-md p-4">
+                <h3 class="font-medium text-ink">Checklist</h3>
 
                 @if ($this->rules->isEmpty())
-                    <p class="mt-2 text-sm text-gray-500">
+                    <p class="mt-2 text-sm text-ink-faint">
                         Setup ini belum punya rule, jadi trade-nya tercatat tanpa skor kepatuhan.
                     </p>
                 @else
@@ -250,12 +250,12 @@ new class extends Component
                             <li wire:key="rule-{{ $rule->id }}">
                                 <label class="flex items-start gap-3">
                                     <input type="checkbox" wire:model.live="checks.{{ $rule->id }}"
-                                        class="mt-1 rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
-                                    <span class="text-sm text-gray-800">
+                                        class="mt-1 rounded border-line-strong text-accent shadow-sm focus:ring-accent">
+                                    <span class="text-sm text-ink">
                                         {{ $rule->label }}
-                                        <span class="ms-1 text-xs text-gray-500">bobot {{ $rule->weight }}</span>
+                                        <span class="ms-1 text-xs text-ink-faint">bobot {{ $rule->weight }}</span>
                                         @if ($rule->is_required)
-                                            <span class="ms-1 text-xs font-medium text-red-600">wajib</span>
+                                            <span class="ms-1 text-xs font-medium text-negative">wajib</span>
                                         @endif
                                     </span>
                                 </label>
@@ -263,7 +263,7 @@ new class extends Component
                         @endforeach
                     </ul>
 
-                    <div class="mt-4 text-sm text-gray-700">
+                    <div class="mt-4 text-sm text-ink-muted">
                         Skor kepatuhan:
                         <span class="font-semibold">
                             {{ $this->score->isUnscored() ? 'belum dinilai' : $this->score->value.'%' }}
@@ -271,7 +271,7 @@ new class extends Component
                     </div>
 
                     @if ($this->score->needsWarning($this->threshold()))
-                        <div class="mt-3 border border-amber-300 bg-amber-50 rounded-md p-3 text-sm text-amber-900">
+                        <div class="mt-3 border border-warn-line bg-warn-soft rounded-md p-3 text-sm text-warn">
                             @if ($this->score->hasUnmetRequired())
                                 <p>{{ $this->score->unmetRequiredCount }} rule wajib tidak terpenuhi.</p>
                             @endif
@@ -279,7 +279,7 @@ new class extends Component
                                 <p>Skor di bawah ambangmu ({{ $this->threshold() }}%).</p>
                             @endif
                             <p class="mt-1">
-                                Trade ini tetap bisa disimpan. Justru trade seperti inilah yang paling perlu dicatat —
+                                Trade ini tetap bisa disimpan. Justru trade seperti inilah yang paling perlu dicatat:
                                 tanpa datanya, tidak ada yang bisa dipelajari.
                             </p>
                         </div>
@@ -298,7 +298,7 @@ new class extends Component
             <div>
                 <x-input-label for="direction" value="Arah" />
                 <select wire:model="direction" id="direction"
-                    class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                    class="mt-1 block w-full border-line-strong focus:border-accent focus:ring-accent rounded-md shadow-sm">
                     @foreach (\App\Models\Trade::directions() as $arah)
                         <option value="{{ $arah }}">{{ $arah }}</option>
                     @endforeach
@@ -334,7 +334,7 @@ new class extends Component
         <div>
             <x-input-label for="notes" value="Catatan (opsional)" />
             <textarea wire:model="notes" id="notes" rows="3"
-                class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"></textarea>
+                class="mt-1 block w-full border-line-strong focus:border-accent focus:ring-accent rounded-md shadow-sm"></textarea>
             <x-input-error class="mt-2" :messages="$errors->get('notes')" />
         </div>
 

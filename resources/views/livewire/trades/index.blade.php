@@ -26,20 +26,20 @@ new class extends Component
 };
 ?>
 
-<div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+<div class="p-4 sm:p-8 bg-surface shadow sm:rounded-lg">
     <header>
-        <h2 class="text-lg font-medium text-gray-900">Trade terakhir</h2>
-        <p class="mt-1 text-sm text-gray-600">
+        <h2 class="text-lg font-medium text-ink">Trade terakhir</h2>
+        <p class="mt-1 text-sm text-ink-muted">
             Ringkasan per trade. Analisis kepatuhan terhadap hasil ada di halaman Laporan.
         </p>
     </header>
 
     @if ($this->trades->isEmpty())
-        <p class="mt-4 text-sm text-gray-500">Belum ada trade tercatat.</p>
+        <p class="mt-4 text-sm text-ink-faint">Belum ada trade tercatat.</p>
     @else
         <div class="mt-4 overflow-x-auto">
             <table class="min-w-full text-sm">
-                <thead class="text-left text-gray-500 border-b border-gray-200">
+                <thead class="text-left text-ink-faint border-b border-line">
                     <tr>
                         <th class="py-2 pe-4">Waktu</th>
                         <th class="py-2 pe-4">Instrumen</th>
@@ -50,21 +50,21 @@ new class extends Component
                         <th class="py-2">R</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100">
+                <tbody class="divide-y divide-line">
                     @foreach ($this->trades as $trade)
                         <tr wire:key="trade-{{ $trade->id }}">
-                            <td class="py-2 pe-4 text-gray-600">{{ $trade->opened_at->format('d/m/Y H:i') }}</td>
-                            <td class="py-2 pe-4 font-medium text-gray-900">{{ $trade->symbol }}</td>
-                            <td class="py-2 pe-4 text-gray-600">{{ $trade->direction }}</td>
-                            <td class="py-2 pe-4 text-gray-600">{{ $trade->setup->name }}</td>
-                            <td class="py-2 pe-4 text-gray-700">
-                                {{ $trade->isUnscored() ? '—' : $trade->compliance_score.'%' }}
+                            <td class="py-2 pe-4 text-ink-muted">{{ $trade->opened_at->format('d/m/Y H:i') }}</td>
+                            <td class="py-2 pe-4 font-medium text-ink">{{ $trade->symbol }}</td>
+                            <td class="py-2 pe-4 text-ink-muted">{{ $trade->direction }}</td>
+                            <td class="py-2 pe-4 text-ink-muted">{{ $trade->setup->name }}</td>
+                            <td class="py-2 pe-4 text-ink-muted">
+                                {{ $trade->isUnscored() ? 'tanpa skor' : $trade->compliance_score.'%' }}
                             </td>
-                            <td class="py-2 pe-4 text-gray-700">
+                            <td class="py-2 pe-4 text-ink-muted">
                                 {{ $trade->isClosed() ? number_format((float) $trade->pnl_amount, 2) : 'terbuka' }}
                             </td>
-                            <td class="py-2 text-gray-700">
-                                {{ $trade->rMultiple() === null ? '—' : number_format($trade->rMultiple(), 2).'R' }}
+                            <td class="py-2 text-ink-muted">
+                                {{ $trade->rMultiple() === null ? 'belum ada' : number_format($trade->rMultiple(), 2).'R' }}
                             </td>
                         </tr>
                     @endforeach

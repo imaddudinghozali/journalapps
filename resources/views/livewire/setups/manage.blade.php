@@ -162,7 +162,7 @@ new class extends Component
             'ruleWeight.max' => 'Bobot antara '.SetupRule::MIN_WEIGHT.' sampai '.SetupRule::MAX_WEIGHT.'.',
         ]);
 
-        // Checklist yang terlalu panjang membuat pengguna berhenti mencatat —
+        // Checklist yang terlalu panjang membuat pengguna berhenti mencatat,
         // risiko Tinggi di PRD. Batasnya konstanta, bukan angka ajaib.
         //
         // Cek-lalu-simpan tidak atomik: dua tab yang menekan tombol bersamaan
@@ -240,11 +240,11 @@ new class extends Component
 
 <div class="space-y-6">
     {{-- Buat setup baru --}}
-    <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+    <div class="p-4 sm:p-8 bg-surface shadow sm:rounded-lg">
         <div class="max-w-xl">
             <header>
-                <h2 class="text-lg font-medium text-gray-900">Setup baru</h2>
-                <p class="mt-1 text-sm text-gray-600">
+                <h2 class="text-lg font-medium text-ink">Setup baru</h2>
+                <p class="mt-1 text-sm text-ink-muted">
                     Satu setup adalah satu pola entry yang kamu kenali, misalnya Break of Structure atau Order Block.
                 </p>
             </header>
@@ -259,7 +259,7 @@ new class extends Component
                 <div>
                     <x-input-label for="description" value="Catatan (opsional)" />
                     <textarea wire:model="description" id="description" rows="2"
-                        class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"></textarea>
+                        class="mt-1 block w-full border-line-strong focus:border-accent focus:ring-accent rounded-md shadow-sm"></textarea>
                     <x-input-error class="mt-2" :messages="$errors->get('description')" />
                 </div>
 
@@ -272,25 +272,25 @@ new class extends Component
     </div>
 
     {{-- Daftar setup aktif --}}
-    <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+    <div class="p-4 sm:p-8 bg-surface shadow sm:rounded-lg">
         <header>
-            <h2 class="text-lg font-medium text-gray-900">Setup aktif</h2>
-            <p class="mt-1 text-sm text-gray-600">Pilih satu setup untuk mengelola rules-nya.</p>
+            <h2 class="text-lg font-medium text-ink">Setup aktif</h2>
+            <p class="mt-1 text-sm text-ink-muted">Pilih satu setup untuk mengelola rules-nya.</p>
         </header>
 
         @if ($this->activeSetups->isEmpty())
-            <p class="mt-4 text-sm text-gray-500">Belum ada setup. Buat satu di atas.</p>
+            <p class="mt-4 text-sm text-ink-faint">Belum ada setup. Buat satu di atas.</p>
         @else
-            <ul class="mt-4 divide-y divide-gray-200">
+            <ul class="mt-4 divide-y divide-line">
                 @foreach ($this->activeSetups as $setup)
                     <li class="py-3 flex items-center justify-between gap-4" wire:key="setup-{{ $setup->id }}">
                         <button type="button" wire:click="selectSetup({{ $setup->id }})" class="text-left flex-1">
-                            <span class="font-medium text-gray-900 {{ $selectedSetupId === $setup->id ? 'underline' : '' }}">
+                            <span class="font-medium text-ink {{ $selectedSetupId === $setup->id ? 'underline' : '' }}">
                                 {{ $setup->name }}
                             </span>
-                            <span class="block text-sm text-gray-500">
+                            <span class="block text-sm text-ink-faint">
                                 {{ $setup->active_rules_count }} rule aktif
-                                @if ($setup->description) — {{ $setup->description }} @endif
+                                @if ($setup->description) &middot; {{ $setup->description }} @endif
                             </span>
                         </button>
                         <x-secondary-button wire:click="archiveSetup({{ $setup->id }})" wire:confirm="Arsipkan setup ini?">
@@ -304,24 +304,24 @@ new class extends Component
 
     {{-- Rules untuk setup terpilih --}}
     @if ($this->selectedSetup)
-        <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+        <div class="p-4 sm:p-8 bg-surface shadow sm:rounded-lg">
             <header>
-                <h2 class="text-lg font-medium text-gray-900">Rules: {{ $this->selectedSetup->name }}</h2>
-                <p class="mt-1 text-sm text-gray-600">
+                <h2 class="text-lg font-medium text-ink">Rules: {{ $this->selectedSetup->name }}</h2>
+                <p class="mt-1 text-sm text-ink-muted">
                     Kriteria yang harus terpenuhi sebelum entry. Bobot menentukan seberapa penting aturan itu
                     ({{ \App\Models\SetupRule::MIN_WEIGHT }}–{{ \App\Models\SetupRule::MAX_WEIGHT }}).
                 </p>
             </header>
 
             @if ($this->activeRules->isNotEmpty())
-                <ul class="mt-4 divide-y divide-gray-200">
+                <ul class="mt-4 divide-y divide-line">
                     @foreach ($this->activeRules as $rule)
                         <li class="py-3 flex items-center justify-between gap-4" wire:key="rule-{{ $rule->id }}">
                             <div>
-                                <span class="text-gray-900">{{ $rule->label }}</span>
-                                <span class="ms-2 text-xs text-gray-500">bobot {{ $rule->weight }}</span>
+                                <span class="text-ink">{{ $rule->label }}</span>
+                                <span class="ms-2 text-xs text-ink-faint">bobot {{ $rule->weight }}</span>
                                 @if ($rule->is_required)
-                                    <span class="ms-2 text-xs font-medium text-red-600">wajib</span>
+                                    <span class="ms-2 text-xs font-medium text-negative">wajib</span>
                                 @endif
                             </div>
                             <x-secondary-button wire:click="archiveRule({{ $rule->id }})">Arsipkan</x-secondary-button>
@@ -329,7 +329,7 @@ new class extends Component
                     @endforeach
                 </ul>
             @else
-                <p class="mt-4 text-sm text-gray-500">Belum ada rule untuk setup ini.</p>
+                <p class="mt-4 text-sm text-ink-faint">Belum ada rule untuk setup ini.</p>
             @endif
 
             <form wire:submit="addRule" class="mt-6 space-y-4 max-w-xl">
@@ -343,7 +343,7 @@ new class extends Component
                     <div>
                         <x-input-label for="ruleWeight" value="Bobot" />
                         <select wire:model="ruleWeight" id="ruleWeight"
-                            class="mt-1 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                            class="mt-1 border-line-strong focus:border-accent focus:ring-accent rounded-md shadow-sm">
                             @for ($i = \App\Models\SetupRule::MIN_WEIGHT; $i <= \App\Models\SetupRule::MAX_WEIGHT; $i++)
                                 <option value="{{ $i }}">{{ $i }}</option>
                             @endfor
@@ -353,8 +353,8 @@ new class extends Component
 
                     <label class="flex items-center gap-2 pb-2">
                         <input type="checkbox" wire:model="ruleRequired"
-                            class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
-                        <span class="text-sm text-gray-700">Wajib terpenuhi</span>
+                            class="rounded border-line-strong text-accent shadow-sm focus:ring-accent">
+                        <span class="text-sm text-ink-muted">Wajib terpenuhi</span>
                     </label>
                 </div>
 
@@ -368,18 +368,18 @@ new class extends Component
 
     {{-- Arsip --}}
     @if ($this->archivedSetups->isNotEmpty())
-        <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+        <div class="p-4 sm:p-8 bg-surface shadow sm:rounded-lg">
             <header>
-                <h2 class="text-lg font-medium text-gray-900">Arsip</h2>
-                <p class="mt-1 text-sm text-gray-600">
+                <h2 class="text-lg font-medium text-ink">Arsip</h2>
+                <p class="mt-1 text-sm text-ink-muted">
                     Setup yang diarsipkan tidak muncul saat mencatat trade, tapi trade lama yang memakainya tetap utuh.
                 </p>
             </header>
 
-            <ul class="mt-4 divide-y divide-gray-200">
+            <ul class="mt-4 divide-y divide-line">
                 @foreach ($this->archivedSetups as $setup)
                     <li class="py-3 flex items-center justify-between gap-4" wire:key="archived-{{ $setup->id }}">
-                        <span class="text-gray-600">{{ $setup->name }}</span>
+                        <span class="text-ink-muted">{{ $setup->name }}</span>
                         <x-secondary-button wire:click="restoreSetup({{ $setup->id }})">Pulihkan</x-secondary-button>
                     </li>
                 @endforeach
