@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout title="Setup & Rules" description="Susun setup trading beserta kriteria entry berbobot.">
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-ink leading-tight">
             {{ __('Setup & Rules') }}

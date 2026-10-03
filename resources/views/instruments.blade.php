@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout title="Instrumen" description="Kelola instrumen beserta ukuran kontraknya.">
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-ink leading-tight">
             {{ __("Instrumen") }}

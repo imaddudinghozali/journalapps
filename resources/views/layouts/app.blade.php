@@ -5,7 +5,20 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        @php
+            $namaApl = config('app.name', 'JournalApps');
+            $judulHalaman = ($title ?? null) ? $title.' — '.$namaApl : $namaApl;
+            $deskripsiHalaman = ($description ?? null)
+                ?: 'Jurnal trading yang mencatat kriteria apa yang terpenuhi saat kamu entry, lalu menunjukkan hasilnya saat kamu patuh dan saat tidak.';
+        @endphp
+
+        <title>{{ $judulHalaman }}</title>
+        <meta name="description" content="{{ $deskripsiHalaman }}">
+
+        {{-- Halaman aplikasi ada di balik autentikasi, jadi tidak ada yang bisa
+             dibagikan ke publik. robots dipasang supaya kalaupun tautannya
+             tersebar, isinya tidak ikut terindeks. --}}
+        <meta name="robots" content="noindex, nofollow">
 
         <!-- Fonts -->
         <link rel="icon" href="/favicon.svg" type="image/svg+xml">

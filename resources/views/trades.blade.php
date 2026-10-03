@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout title="Jurnal Trade" description="Catat trade beserta checklist rules yang benar-benar terpenuhi saat entry.">
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-ink leading-tight">
             {{ __('Jurnal Trade') }}

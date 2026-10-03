@@ -1,7 +1,7 @@
-<x-app-layout>
+<x-app-layout title="Profil" description="Ambang peringatan kepatuhan dan pengaturan akun.">
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-ink leading-tight">
-            {{ __('Profile') }}
+            {{ __('Profil') }}
         </h2>
     </x-slot>
 
