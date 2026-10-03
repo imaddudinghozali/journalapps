@@ -52,12 +52,12 @@ new class extends Component
                 </thead>
                 <tbody class="divide-y divide-line">
                     @foreach ($this->trades as $trade)
-                        <tr wire:key="trade-{{ $trade->id }}">
+                        <tr wire:key="trade-{{ $trade->id }}" class="row-enter">
                             <td class="py-2 pe-4 text-ink-muted">{{ $trade->opened_at->format('d/m/Y H:i') }}</td>
                             <td class="py-2 pe-4 font-medium text-ink">{{ $trade->symbol }}</td>
                             <td class="py-2 pe-4 text-ink-muted">{{ $trade->direction }}</td>
                             <td class="py-2 pe-4 text-ink-muted">{{ $trade->setup->name }}</td>
-                            <td class="py-2 pe-4 text-ink-muted">
+                            <td class="py-2 pe-4 text-ink-muted tabular">
                                 {{ $trade->isUnscored() ? 'tanpa skor' : $trade->compliance_score.'%' }}
                             </td>
                             <td class="py-2 pe-4 text-ink-muted">

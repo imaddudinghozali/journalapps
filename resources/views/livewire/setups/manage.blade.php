@@ -264,7 +264,10 @@ new class extends Component
                 </div>
 
                 <div class="flex items-center gap-4">
-                    <x-primary-button>Simpan setup</x-primary-button>
+                    <x-primary-button wire:loading.attr="disabled" wire:target="createSetup">
+                        <span wire:loading.remove wire:target="createSetup">Simpan setup</span>
+                        <span wire:loading wire:target="createSetup">Menyimpan</span>
+                    </x-primary-button>
                     <x-action-message class="me-3" on="setup-created">Tersimpan.</x-action-message>
                 </div>
             </form>
@@ -304,7 +307,7 @@ new class extends Component
 
     {{-- Rules untuk setup terpilih --}}
     @if ($this->selectedSetup)
-        <div class="p-4 sm:p-8 bg-surface shadow sm:rounded-lg">
+        <div class="p-4 sm:p-8 bg-surface shadow sm:rounded-lg pop" wire:key="panel-{{ $selectedSetupId }}">
             <header>
                 <h2 class="text-lg font-medium text-ink">Rules: {{ $this->selectedSetup->name }}</h2>
                 <p class="mt-1 text-sm text-ink-muted">
@@ -359,7 +362,10 @@ new class extends Component
                 </div>
 
                 <div class="flex items-center gap-4">
-                    <x-primary-button>Tambah rule</x-primary-button>
+                    <x-primary-button wire:loading.attr="disabled" wire:target="addRule">
+                        <span wire:loading.remove wire:target="addRule">Tambah rule</span>
+                        <span wire:loading wire:target="addRule">Menambah</span>
+                    </x-primary-button>
                     <x-action-message class="me-3" on="rule-added">Tersimpan.</x-action-message>
                 </div>
             </form>

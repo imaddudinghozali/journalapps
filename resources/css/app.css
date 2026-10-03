@@ -135,3 +135,83 @@
         font-variant-numeric: tabular-nums;
     }
 }
+
+/*
+|--------------------------------------------------------------------------
+| Lapisan gerak
+|--------------------------------------------------------------------------
+|
+| Setiap animasi di sini punya alasan: umpan balik atas aksi, transisi
+| keadaan, atau hierarki saat halaman masuk. Tidak ada loop tak berujung dan
+| tidak ada gerakan dekoratif.
+|
+| Produk ini soal menilai diri sendiri dengan jujur. Antarmuka yang meriah
+| akan bertabrakan dengan maksud itu, jadi durasinya pendek dan jaraknya
+| kecil: cukup untuk menjelaskan apa yang berubah, tidak sampai menghibur.
+|
+| Seluruh blok dibungkus prefers-reduced-motion. Tanpa itu, halaman tetap
+| berfungsi penuh dan langsung tampil.
+|
+*/
+
+@layer utilities {
+    @media (prefers-reduced-motion: no-preference) {
+        /* Masuknya seksi halaman: menjelaskan urutan baca, sekali saja. */
+        .enter {
+            animation: enter 0.42s cubic-bezier(0.16, 1, 0.3, 1) both;
+            animation-delay: calc(var(--enter-index, 0) * 60ms);
+        }
+
+        @keyframes enter {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        /* Sesuatu yang baru muncul sebagai akibat aksi, bukan saat muat. */
+        .pop {
+            animation: pop 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        @keyframes pop {
+            from {
+                opacity: 0;
+                transform: translateY(-4px) scale(0.985);
+            }
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        /* Angka yang berubah akibat centangan: perubahannya yang ditandai. */
+        .tabular {
+            transition: color 0.2s ease;
+        }
+
+        /* Baris tabel saat daftar bertambah. */
+        .row-enter {
+            animation: enter 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+    }
+
+    /* Tekanan fisik pada kontrol. Murah, dan satu-satunya gerak yang tetap
+       ada walau pengguna meminta gerakan dikurangi. */
+    .press {
+        transition: transform 0.12s ease, background-color 0.15s ease;
+    }
+
+    .press:active {
+        transform: scale(0.98);
+    }
+
+    /* Keadaan sibuk Livewire: umpan balik nyata, bukan hiasan. */
+    [wire\:loading] {
+        transition: opacity 0.15s ease;
+    }
+}

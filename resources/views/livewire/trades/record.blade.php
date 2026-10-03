@@ -237,7 +237,7 @@ new class extends Component
         </div>
 
         @if ($this->selectedSetup)
-            <div class="border border-line rounded-md p-4">
+            <div class="border border-line rounded-md p-4 pop" wire:key="checklist-{{ $tradingSetupId }}">
                 <h3 class="font-medium text-ink">Checklist</h3>
 
                 @if ($this->rules->isEmpty())
@@ -265,13 +265,14 @@ new class extends Component
 
                     <div class="mt-4 text-sm text-ink-muted">
                         Skor kepatuhan:
-                        <span class="font-semibold">
+                        <span class="tabular font-semibold {{ $this->score->needsWarning($this->threshold()) ? 'text-warn' : 'text-ink' }}"
+                              wire:key="skor-{{ $this->score->value }}">
                             {{ $this->score->isUnscored() ? 'belum dinilai' : $this->score->value.'%' }}
                         </span>
                     </div>
 
                     @if ($this->score->needsWarning($this->threshold()))
-                        <div class="mt-3 border border-warn-line bg-warn-soft rounded-md p-3 text-sm text-warn">
+                        <div class="mt-3 border border-warn-line bg-warn-soft rounded-md p-3 text-sm text-warn pop">
                             @if ($this->score->hasUnmetRequired())
                                 <p>{{ $this->score->unmetRequiredCount }} rule wajib tidak terpenuhi.</p>
                             @endif
@@ -339,7 +340,10 @@ new class extends Component
         </div>
 
         <div class="flex items-center gap-4">
-            <x-primary-button>Simpan trade</x-primary-button>
+            <x-primary-button wire:loading.attr="disabled" wire:target="save">
+                <span wire:loading.remove wire:target="save">Simpan trade</span>
+                <span wire:loading wire:target="save">Menyimpan</span>
+            </x-primary-button>
             <x-action-message class="me-3" on="trade-recorded">Tersimpan.</x-action-message>
         </div>
     </form>
