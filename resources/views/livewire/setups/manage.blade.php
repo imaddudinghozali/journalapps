@@ -296,7 +296,8 @@ new class extends Component
                                 @if ($setup->description) &middot; {{ $setup->description }} @endif
                             </span>
                         </button>
-                        <x-secondary-button wire:click="archiveSetup({{ $setup->id }})" wire:confirm="Arsipkan setup ini?">
+                        <x-secondary-button wire:click="archiveSetup({{ $setup->id }})" wire:confirm="Arsipkan setup ini?" class="gap-2">
+                            <x-phosphor-archive class="h-4 w-4" aria-hidden="true" />
                             Arsipkan
                         </x-secondary-button>
                     </li>
@@ -329,7 +330,10 @@ new class extends Component
                                     <span class="ms-2 text-xs font-medium text-negative">wajib</span>
                                 @endif
                             </div>
-                            <x-secondary-button wire:click="archiveRule({{ $rule->id }})">Arsipkan</x-secondary-button>
+                            <x-secondary-button wire:click="archiveRule({{ $rule->id }})" class="gap-2">
+                                <x-phosphor-archive class="h-4 w-4" aria-hidden="true" />
+                                Arsipkan
+                            </x-secondary-button>
                         </li>
                     @endforeach
                 </ul>
@@ -389,7 +393,10 @@ new class extends Component
                 @foreach ($this->archivedSetups as $setup)
                     <li class="py-3 flex items-center justify-between gap-4" wire:key="archived-{{ $setup->id }}">
                         <span class="text-ink-muted">{{ $setup->name }}</span>
-                        <x-secondary-button wire:click="restoreSetup({{ $setup->id }})">Pulihkan</x-secondary-button>
+                        <x-secondary-button wire:click="restoreSetup({{ $setup->id }})" class="gap-2">
+                            <x-phosphor-arrow-u-up-left class="h-4 w-4" aria-hidden="true" />
+                            Pulihkan
+                        </x-secondary-button>
                     </li>
                 @endforeach
             </ul>

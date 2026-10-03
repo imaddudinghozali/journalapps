@@ -262,11 +262,15 @@ new class extends Component
             <h2 class="text-lg font-medium text-ink">{{ $this->monthLabel() }}</h2>
             <div class="flex items-center gap-2">
                 <button type="button" wire:click="previousMonth"
-                        class="press rounded-md border border-line-strong px-3 py-1.5 text-sm text-ink-muted hover:text-ink hover:bg-surface-sunken"
-                        aria-label="Bulan sebelumnya">&larr;</button>
+                        class="press rounded-md border border-line-strong p-2 text-ink-muted hover:text-ink hover:bg-surface-sunken"
+                        aria-label="Bulan sebelumnya">
+                    <x-phosphor-caret-left class="h-4 w-4" aria-hidden="true" />
+                </button>
                 <button type="button" wire:click="nextMonth"
-                        class="press rounded-md border border-line-strong px-3 py-1.5 text-sm text-ink-muted hover:text-ink hover:bg-surface-sunken"
-                        aria-label="Bulan berikutnya">&rarr;</button>
+                        class="press rounded-md border border-line-strong p-2 text-ink-muted hover:text-ink hover:bg-surface-sunken"
+                        aria-label="Bulan berikutnya">
+                    <x-phosphor-caret-right class="h-4 w-4" aria-hidden="true" />
+                </button>
             </div>
         </div>
 

@@ -161,7 +161,10 @@ new class extends Component
                                 1 lot = {{ $unit($ins->contract_size) }} unit &middot; {{ $ins->trades_count }} trade
                             </span>
                         </div>
-                        <x-secondary-button wire:click="archive({{ $ins->id }})">Arsipkan</x-secondary-button>
+                        <x-secondary-button wire:click="archive({{ $ins->id }})" class="gap-2">
+                            <x-phosphor-archive class="h-4 w-4" aria-hidden="true" />
+                            Arsipkan
+                        </x-secondary-button>
                     </li>
                 @endforeach
             </ul>
@@ -183,7 +186,10 @@ new class extends Component
                 @foreach ($this->archived as $ins)
                     <li class="py-3 flex items-center justify-between gap-4" wire:key="arsip-{{ $ins->id }}">
                         <span class="text-ink-muted">{{ $ins->symbol }}</span>
-                        <x-secondary-button wire:click="restore({{ $ins->id }})">Pulihkan</x-secondary-button>
+                        <x-secondary-button wire:click="restore({{ $ins->id }})" class="gap-2">
+                            <x-phosphor-arrow-u-up-left class="h-4 w-4" aria-hidden="true" />
+                            Pulihkan
+                        </x-secondary-button>
                     </li>
                 @endforeach
             </ul>
