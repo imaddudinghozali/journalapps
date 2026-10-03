@@ -48,6 +48,24 @@
 
         --positive: 15 118 110;
         --negative: 190 18 60;
+
+        /*
+        | Warna mark chart dipisah dari warna UI.
+        |
+        | Keduanya punya syarat berbeda: mark chart dipilih untuk keterpisahan
+        | bagi mata buta warna, teks tombol dipilih untuk rasio kontras.
+        | Menyatukannya membuat salah satu dikorbankan.
+        |
+        | Pasangan di bawah lolos seluruh pemeriksaan validator terhadap
+        | permukaan kartu: lightness band, chroma floor, pemisahan CVD
+        | (deltaE 11,3 terang / 12,0 gelap), dan kontras.
+        |
+        | Teal pertama yang saya pilih (#0f766e) GAGAL chroma floor: terbaca
+        | abu, bukan hijau.
+        */
+        --viz-positive: 13 148 136;
+        --viz-negative: 190 18 60;
+        --viz-neutral: 240 239 236;
     }
 
     @media (prefers-color-scheme: dark) {
@@ -77,6 +95,10 @@
 
             --positive: 45 212 191;
             --negative: 251 113 133;
+
+            --viz-positive: 19 163 148;
+            --viz-negative: 239 68 68;
+            --viz-neutral: 56 56 53;
         }
     }
 
