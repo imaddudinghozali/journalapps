@@ -283,6 +283,9 @@ new class extends Component
             $trade->pnl_amount = TradeMath::pnl($validated['direction'], $lot, $entry, $exit, $ukuran);
             $trade->risk_amount = TradeMath::risk($lot, $entry, (float) $validated['stopPrice'], $ukuran);
             $trade->compliance_score = $score->value;
+            // Disalin sekali dan tidak pernah ditimpa, bahkan kalau checklist
+            // kelak direvisi. Jawaban pertama adalah yang paling jujur.
+            $trade->original_compliance_score = $score->value;
             $trade->save();
 
             // Snapshot: label, bobot, dan status wajib disalin APA ADANYA saat

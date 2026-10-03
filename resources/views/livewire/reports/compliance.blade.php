@@ -111,6 +111,13 @@ new class extends Component
                 </div>
             </dl>
 
+            @if ($laporan->revisedCount > 0)
+                <p class="mt-4 text-sm text-warn">
+                    {{ $laporan->revisedCount }} trade checklist-nya pernah direvisi setelah dicatat. Skor kelompok di
+                    atas memakai jawaban terbaru, bukan jawaban saat entry.
+                </p>
+            @endif
+
             <p class="mt-4 text-xs text-ink-faint">
                 Perbedaan angka di sini menunjukkan kaitan, bukan sebab-akibat. Periode pasar, instrumen, dan ukuran
                 posisi juga ikut berpengaruh.

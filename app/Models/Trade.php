@@ -53,6 +53,8 @@ class Trade extends Model
             'exit_price' => 'decimal:8',
             'contract_size' => 'decimal:8',
             'compliance_score' => 'integer',
+            'original_compliance_score' => 'integer',
+            'checklist_revised_at' => 'datetime',
             'opened_at' => 'datetime',
             'closed_at' => 'datetime',
         ];
@@ -126,6 +128,12 @@ class Trade extends Model
         }
 
         return (float) $this->pnl_amount / (float) $this->risk_amount;
+    }
+
+    /** Checklist pernah diubah setelah trade tercatat. */
+    public function checklistWasRevised(): bool
+    {
+        return $this->checklist_revised_at !== null;
     }
 
     public function isUnscored(): bool

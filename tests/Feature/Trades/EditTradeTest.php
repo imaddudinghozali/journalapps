@@ -104,7 +104,73 @@ it('tidak mengubah skor kepatuhan meski trade diedit', function () {
     expect($trade->fresh()->compliance_score)->toBe(50);
 });
 
-it('tidak menyediakan jalan mengubah jawaban checklist', function () {
+it('mengizinkan koreksi checklist dan menghitung ulang skornya', function () {
+    $alice = User::factory()->create();
+    $this->actingAs($alice);
+    $trade = tradeTerbuka($alice);
+
+    $rule = SetupRule::factory()->for($alice)->for($trade->setup, 'setup')->create(['weight' => 3]);
+    $check = TradeRuleCheck::factory()->for($alice)->for($trade)->create([
+        'setup_rule_id' => $rule->id,
+        'is_met' => false,
+        'rule_label' => 'Kriteria yang salah centang',
+        'rule_weight' => 3,
+    ]);
+
+    Volt::test('trades.edit', ['trade' => $trade->fresh()])
+        ->set('checks.'.$check->id, true)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect($check->fresh()->is_met)->toBeTrue()
+        ->and($trade->fresh()->compliance_score)->toBe(100);
+});
+
+it('menyimpan skor pertama dan tidak pernah menimpanya', function () {
+    $alice = User::factory()->create();
+    $this->actingAs($alice);
+    $trade = tradeTerbuka($alice);
+
+    $rule = SetupRule::factory()->for($alice)->for($trade->setup, 'setup')->create(['weight' => 3]);
+    $check = TradeRuleCheck::factory()->for($alice)->for($trade)->create([
+        'setup_rule_id' => $rule->id,
+        'is_met' => false,
+        'rule_weight' => 3,
+    ]);
+
+    Volt::test('trades.edit', ['trade' => $trade->fresh()])
+        ->set('checks.'.$check->id, true)
+        ->call('save');
+
+    $segar = $trade->fresh();
+
+    // Skor berubah, tapi yang pertama tetap tersimpan. Revisi tidak bisa
+    // menghapus jejak jawaban awal.
+    expect($segar->compliance_score)->toBe(100)
+        ->and($segar->original_compliance_score)->toBe(50);
+});
+
+it('mencatat waktu revisi checklist', function () {
+    $alice = User::factory()->create();
+    $this->actingAs($alice);
+    $trade = tradeTerbuka($alice);
+
+    $rule = SetupRule::factory()->for($alice)->for($trade->setup, 'setup')->create();
+    $check = TradeRuleCheck::factory()->for($alice)->for($trade)->create([
+        'setup_rule_id' => $rule->id,
+        'is_met' => false,
+    ]);
+
+    expect($trade->checklistWasRevised())->toBeFalse();
+
+    Volt::test('trades.edit', ['trade' => $trade->fresh()])
+        ->set('checks.'.$check->id, true)
+        ->call('save');
+
+    expect($trade->fresh()->checklistWasRevised())->toBeTrue();
+});
+
+it('tidak menandai revisi ketika checklist tidak diubah', function () {
     $alice = User::factory()->create();
     $this->actingAs($alice);
     $trade = tradeTerbuka($alice);
@@ -112,19 +178,31 @@ it('tidak menyediakan jalan mengubah jawaban checklist', function () {
     $rule = SetupRule::factory()->for($alice)->for($trade->setup, 'setup')->create();
     TradeRuleCheck::factory()->for($alice)->for($trade)->create([
         'setup_rule_id' => $rule->id,
-        'is_met' => false,
-        'rule_label' => 'Kriteria yang dilanggar',
-        'rule_weight' => 3,
+        'is_met' => true,
     ]);
 
-    $komponen = Volt::test('trades.edit', ['trade' => $trade]);
+    // Hanya menutup posisi, checklist tidak disentuh.
+    Volt::test('trades.edit', ['trade' => $trade->fresh()])
+        ->set('exitPrice', '2005')
+        ->set('closedAt', now()->format('Y-m-d\TH:i'))
+        ->call('save');
 
-    // Checklist tampil sebagai catatan, bukan sebagai input.
-    $komponen->assertSee('Kriteria yang dilanggar')
-        ->assertSee('Terkunci dengan sengaja')
-        ->assertDontSee('wire:model="checks');
+    $segar = $trade->fresh();
 
-    expect($trade->fresh()->ruleChecks()->first()->is_met)->toBeFalse();
+    expect($segar->checklistWasRevised())->toBeFalse()
+        ->and($segar->compliance_score)->toBe(50);
+});
+
+it('memberitahu pengguna bahwa revisi tercatat', function () {
+    $alice = User::factory()->create();
+    $this->actingAs($alice);
+    $trade = tradeTerbuka($alice);
+
+    $rule = SetupRule::factory()->for($alice)->for($trade->setup, 'setup')->create();
+    TradeRuleCheck::factory()->for($alice)->for($trade)->create(['setup_rule_id' => $rule->id]);
+
+    Volt::test('trades.edit', ['trade' => $trade->fresh()])
+        ->assertSee('ditandai di laporan');
 });
 
 it('menolak harga exit tanpa waktu tutup', function () {

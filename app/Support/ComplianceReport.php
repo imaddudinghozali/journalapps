@@ -25,6 +25,7 @@ final class ComplianceReport
         public readonly TradeStatistics $compliant,
         public readonly TradeStatistics $nonCompliant,
         public readonly int $unscoredCount,
+        public readonly int $revisedCount,
         /** @var array<int, array{name: string, stats: TradeStatistics}> */
         public readonly array $perSetup,
         /** @var array<int, array{rule_id: int|null, label: string, violations: int, met: TradeStatistics, unmet: TradeStatistics}> */
@@ -44,6 +45,7 @@ final class ComplianceReport
         $patuh = [];
         $tidakPatuh = [];
         $tanpaSkor = 0;
+        $direvisi = 0;
         $perSetup = [];
 
         foreach ($closedTrades as $trade) {
@@ -54,6 +56,10 @@ final class ComplianceReport
             }
 
             $semua[] = $r;
+
+            if ($trade->checklistWasRevised()) {
+                $direvisi++;
+            }
             $perSetup[$trade->trading_setup_id]['name'] ??= $trade->setup->name;
             $perSetup[$trade->trading_setup_id]['r'][] = $r;
 
@@ -78,6 +84,7 @@ final class ComplianceReport
             TradeStatistics::from($patuh),
             TradeStatistics::from($tidakPatuh),
             $tanpaSkor,
+            $direvisi,
             self::ringkasSetup($perSetup),
             self::ringkasRule($closedTrades),
         );

@@ -288,3 +288,22 @@ it('memisahkan kelompok yang sampelnya cukup dari yang belum', function () {
         ->and($laporan->nonCompliant->hasEnoughSample())->toBeFalse()
         ->and($laporan->nonCompliant->sampleSize)->toBe(3);
 });
+
+it('menghitung trade yang checklist-nya pernah direvisi', function () {
+    $alice = User::factory()->create();
+    $this->actingAs($alice);
+    $setup = TradingSetup::factory()->for($alice)->create();
+
+    tradeTertutup($alice, $setup, 100, 100, 90);
+
+    $direvisi = tradeTertutup($alice, $setup, 100, 200, 100);
+    $direvisi->checklist_revised_at = now();
+    $direvisi->original_compliance_score = 40;
+    $direvisi->saveQuietly();
+
+    $laporan = ComplianceReport::from(muatTrade(), 80);
+
+    // Angka kepatuhan tidak boleh dibaca tanpa tahu berapa yang jawabannya
+    // diubah setelah hasilnya kelihatan.
+    expect($laporan->revisedCount)->toBe(1);
+});

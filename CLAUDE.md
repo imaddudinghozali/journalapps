@@ -88,6 +88,8 @@ Belum ada model domain yang memakai trait ini (milestone 1 hanya membangun mekan
 
 **`App\Support\ComplianceScore` adalah satu-satunya tempat skor dihitung.** Rumusnya `round(100 * bobot terpenuhi / total bobot)`; tanpa rule hasilnya `null`. Pelanggaran rule wajib dilaporkan terpisah dari skor, karena bobotnya bisa kecil sehingga skor tetap tinggi padahal syarat mutlak dilanggar. Mengubah rumus ini merusak perbandingan dengan data historis.
 
+**Checklist boleh direvisi, tapi revisinya tidak boleh bisa disembunyikan.** `original_compliance_score` disimpan sekali saat trade dicatat dan **tidak pernah ditimpa**; `checklist_revised_at` menandai perubahan; laporan menampilkan berapa trade yang direvisi. Jangan menambah jalur yang mengubah skor tanpa menyentuh dua kolom itu — tanpa jejak, pengguna bisa mencentang ulang setelah melihat hasil dan seluruh laporan kehilangan dasarnya.
+
 **Jangan pernah memblokir penyimpanan trade karena kepatuhan rendah.** Hanya peringatan. Jurnal yang menolak mencatat trade buruk akan menghapus justru data yang paling perlu dipelajari. Ambangnya milik pengguna (`users.compliance_threshold`), bukan angka tetap aplikasi.
 
 **Jangan memberi badge, streak, atau perayaan atas skor tinggi.** Skor diisi sendiri oleh pengguna; memberinya penghargaan mendorong pencentangan tidak jujur dan merusak satu-satunya aset produk ini.

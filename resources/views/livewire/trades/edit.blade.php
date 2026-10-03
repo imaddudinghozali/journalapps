@@ -2,6 +2,7 @@
 
 use App\Models\Instrument;
 use App\Models\Trade;
+use App\Support\ComplianceScore;
 use App\Support\TradeMath;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
@@ -30,13 +31,16 @@ new #[Layout('layouts.app')] class extends Component
 
     public string $notes = '';
 
+    /** @var array<int, bool> trade_rule_check id => terpenuhi */
+    public array $checks = [];
+
     public function mount(Trade $trade): void
     {
         // Route model binding sudah terscope global, jadi trade milik orang
         // lain berakhir 404 sebelum sampai sini. authorize() lapisan kedua.
         $this->authorize('update', $trade);
 
-        $this->trade = $trade;
+        $this->trade = $trade->load('ruleChecks');
         $this->instrumentId = $trade->instrument_id;
         $this->direction = $trade->direction;
         $this->lotSize = (string) ($trade->lot_size ?? '');
@@ -46,6 +50,10 @@ new #[Layout('layouts.app')] class extends Component
         $this->openedAt = $trade->opened_at->format('Y-m-d\TH:i');
         $this->closedAt = $trade->closed_at?->format('Y-m-d\TH:i') ?? '';
         $this->notes = $trade->notes ?? '';
+
+        foreach ($trade->ruleChecks as $check) {
+            $this->checks[$check->id] = (bool) $check->is_met;
+        }
     }
 
     #[Computed]
@@ -99,6 +107,42 @@ new #[Layout('layouts.app')] class extends Component
                 $gagal('Stop tidak boleh sama dengan harga entry: jaraknya nol, risikonya jadi tidak terdefinisi.');
             }
         };
+    }
+
+    /**
+     * Checklist boleh direvisi, tapi revisinya tidak bisa disembunyikan.
+     *
+     * original_compliance_score tidak pernah ditimpa, dan waktu revisi
+     * dicatat supaya laporan bisa menandai trade yang jawabannya diubah
+     * setelah hasilnya kelihatan.
+     */
+    protected function simpanRevisiChecklist(): void
+    {
+        $berubah = false;
+
+        foreach ($this->trade->ruleChecks as $check) {
+            $baru = (bool) ($this->checks[$check->id] ?? false);
+
+            if ($baru !== (bool) $check->is_met) {
+                $check->is_met = $baru;
+                $check->save();
+                $berubah = true;
+            }
+        }
+
+        if (! $berubah) {
+            return;
+        }
+
+        $this->trade->load('ruleChecks');
+
+        $skor = ComplianceScore::from(
+            $this->trade->ruleChecks->map(fn ($c) => $c->toScoreInput())->all()
+        );
+
+        $this->trade->original_compliance_score ??= $this->trade->compliance_score;
+        $this->trade->compliance_score = $skor->value;
+        $this->trade->checklist_revised_at = now();
     }
 
     public function save(): void
@@ -156,9 +200,8 @@ new #[Layout('layouts.app')] class extends Component
             $this->trade->pnl_amount = TradeMath::pnl($divalidasi['direction'], $lot, $entry, $exit, $ukuran);
             $this->trade->risk_amount = TradeMath::risk($lot, $entry, (float) $divalidasi['stopPrice'], $ukuran);
 
-            // compliance_score sengaja TIDAK disentuh. Checklist adalah
-            // catatan apa yang terpenuhi saat entry; menghitung ulang di sini
-            // berarti membiarkan skor diperbaiki setelah hasilnya kelihatan.
+            $this->simpanRevisiChecklist();
+
             $this->trade->save();
         });
 
@@ -285,39 +328,57 @@ new #[Layout('layouts.app')] class extends Component
         </form>
     </div>
 
-    {{-- Checklist ditampilkan, tidak bisa diubah. --}}
+    {{-- Checklist bisa direvisi, tapi revisinya tercatat. --}}
     <div class="p-4 sm:p-8 bg-surface shadow sm:rounded-lg">
         <header>
             <h2 class="text-lg font-medium text-ink">Checklist saat entry</h2>
             <p class="mt-1 text-sm text-ink-muted max-w-[65ch]">
-                Terkunci dengan sengaja. Ini catatan kriteria apa yang terpenuhi saat kamu masuk posisi. Kalau bisa
-                diubah setelah hasilnya kelihatan, skor kepatuhan berhenti berarti apa-apa.
+                Boleh kamu koreksi kalau ada yang salah centang. Tapi skor pertama tetap tersimpan dan revisinya
+                ditandai di laporan, jadi perbaikan tidak bisa menghapus jejaknya.
             </p>
+
+            @if ($trade->checklistWasRevised())
+                <p class="mt-3 text-sm text-warn">
+                    Checklist ini pernah direvisi pada {{ $trade->checklist_revised_at->format('d/m/Y H:i') }}.
+                    Skor saat pertama dicatat: {{ $trade->original_compliance_score ?? 'belum dinilai' }}@if ($trade->original_compliance_score !== null)%@endif.
+                </p>
+            @endif
         </header>
 
         @if ($this->ruleChecks->isEmpty())
             <p class="mt-4 text-sm text-ink-faint">Setup ini belum punya rule saat trade dicatat.</p>
         @else
-            <ul class="mt-4 divide-y divide-line">
-                @foreach ($this->ruleChecks as $check)
-                    <li class="py-3 flex items-start justify-between gap-4" wire:key="check-{{ $check->id }}">
-                        <span class="text-sm text-ink">
-                            {{ $check->rule_label }}
-                            <span class="ms-1 text-xs text-ink-faint">bobot {{ $check->rule_weight }}</span>
-                            @if ($check->rule_required)
-                                <span class="ms-1 text-xs font-medium text-negative">wajib</span>
-                            @endif
-                        </span>
-                        <span class="text-sm {{ $check->is_met ? 'text-viz-positive' : 'text-ink-faint' }}">
-                            {{ $check->is_met ? 'terpenuhi' : 'tidak' }}
-                        </span>
-                    </li>
-                @endforeach
-            </ul>
+            <form wire:submit="save" class="mt-4">
+                <ul class="divide-y divide-line">
+                    @foreach ($this->ruleChecks as $check)
+                        <li class="py-3" wire:key="check-{{ $check->id }}">
+                            <label class="flex items-start gap-3">
+                                <input type="checkbox" wire:model.live="checks.{{ $check->id }}"
+                                       class="mt-1 rounded border-line-strong text-accent shadow-sm focus:ring-accent">
+                                <span class="text-sm text-ink">
+                                    {{ $check->rule_label }}
+                                    <span class="ms-1 text-xs text-ink-faint">bobot {{ $check->rule_weight }}</span>
+                                    @if ($check->rule_required)
+                                        <span class="ms-1 text-xs font-medium text-negative">wajib</span>
+                                    @endif
+                                </span>
+                            </label>
+                        </li>
+                    @endforeach
+                </ul>
 
-            <p class="mt-4 text-sm text-ink-muted tabular">
-                Skor kepatuhan: {{ $trade->isUnscored() ? 'belum dinilai' : $trade->compliance_score.'%' }}
-            </p>
+                <p class="mt-4 text-sm text-ink-muted tabular">
+                    Skor kepatuhan sekarang: {{ $trade->isUnscored() ? 'belum dinilai' : $trade->compliance_score.'%' }}
+                </p>
+
+                <div class="mt-4 flex items-center gap-4">
+                    <x-primary-button wire:loading.attr="disabled" wire:target="save">
+                        <span wire:loading.remove wire:target="save">Simpan perubahan</span>
+                        <span wire:loading wire:target="save">Menyimpan</span>
+                    </x-primary-button>
+                    <x-action-message class="me-3" on="trade-updated">Tersimpan.</x-action-message>
+                </div>
+            </form>
         @endif
     </div>
 </div>
