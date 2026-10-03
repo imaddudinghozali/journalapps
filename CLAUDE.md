@@ -131,7 +131,7 @@ Model fixture `tests/Fixtures/OwnedThing.php` hanya untuk menguji mekanisme kepe
 php artisan test --coverage --min=80
 ```
 
-Angka saat ini 93,7% dari 172 test. Margin di atas ambang kecil, jadi kode baru tanpa test akan cepat menjatuhkannya — tulis test bersamaan dengan kodenya, jangan menunda.
+Angka saat ini 95,7% dari 244 test. Margin di atas ambang kecil, jadi kode baru tanpa test akan cepat menjatuhkannya — tulis test bersamaan dengan kodenya, jangan menunda.
 
 Celah coverage yang diketahui dan disengaja: cabang exception pada hook `updating` di `BelongsToUser` (82,8%) dan `View/Components\GuestLayout` (0%, kelas layout bawaan Breeze tanpa logika).
 

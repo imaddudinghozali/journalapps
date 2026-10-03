@@ -144,7 +144,7 @@ php artisan test --coverage --min=80
 
 Test berjalan di SQLite in-memory (`phpunit.xml`), jadi menjalankan test tidak pernah menyentuh database MariaDB.
 
-Coverage saat ini **93,7%** dari 172 test, di atas ambang minimum 80%.
+Coverage saat ini **95,7%** dari 244 test, di atas ambang minimum 80%.
 
 ## Fitur yang sudah jalan
 
