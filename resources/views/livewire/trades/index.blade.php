@@ -30,7 +30,7 @@ new class extends Component
     <header>
         <h2 class="text-lg font-medium text-gray-900">Trade terakhir</h2>
         <p class="mt-1 text-sm text-gray-600">
-            Ringkasan per trade. Analisis kepatuhan terhadap hasil menyusul di laporan.
+            Ringkasan per trade. Analisis kepatuhan terhadap hasil ada di halaman Laporan.
         </p>
     </header>
 
@@ -61,7 +61,7 @@ new class extends Component
                                 {{ $trade->isUnscored() ? '—' : $trade->compliance_score.'%' }}
                             </td>
                             <td class="py-2 pe-4 text-gray-700">
-                                {{ $trade->pnl_amount === null ? 'terbuka' : number_format((float) $trade->pnl_amount, 2) }}
+                                {{ $trade->isClosed() ? number_format((float) $trade->pnl_amount, 2) : 'terbuka' }}
                             </td>
                             <td class="py-2 text-gray-700">
                                 {{ $trade->rMultiple() === null ? '—' : number_format($trade->rMultiple(), 2).'R' }}

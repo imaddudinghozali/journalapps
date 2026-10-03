@@ -12,6 +12,10 @@ Route::view('trades', 'trades')
     ->middleware(['auth', 'verified'])
     ->name('trades');
 
+Route::view('reports', 'reports')
+    ->middleware(['auth', 'verified'])
+    ->name('reports');
+
 Route::view('setups', 'setups')
     ->middleware(['auth', 'verified'])
     ->name('setups');

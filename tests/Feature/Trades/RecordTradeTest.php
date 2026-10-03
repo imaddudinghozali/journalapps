@@ -56,7 +56,8 @@ it('mencatat trade beserta jawaban checklist', function () {
         ->set('direction', Trade::DIRECTION_LONG)
         ->set('riskAmount', '50')
         ->set('pnlAmount', '125.5')
-        ->set('openedAt', now()->format('Y-m-d\TH:i'))
+        ->set('openedAt', now()->subHour()->format('Y-m-d\TH:i'))
+        ->set('closedAt', now()->format('Y-m-d\TH:i'))
         ->call('save')
         ->assertHasNoErrors();
 

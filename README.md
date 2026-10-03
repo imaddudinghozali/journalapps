@@ -15,7 +15,7 @@ Tujuannya menjawab satu pertanyaan yang tidak bisa dijawab jurnal biasa: **apaka
 | 2 — Katalog setup dan rules | Selesai |
 | 3 — Pencatatan trade dengan checklist | Selesai |
 | 4 — Peringatan kepatuhan rendah | Selesai |
-| 5 — Laporan kepatuhan vs P&L | Belum |
+| 5 — Laporan kepatuhan vs P&L | Selesai |
 | 6 — Baseline dari jurnal lama | Belum |
 
 ## Stack
@@ -82,13 +82,14 @@ php artisan test --coverage --min=80
 
 Test berjalan di SQLite in-memory (`phpunit.xml`), jadi menjalankan test tidak pernah menyentuh database MariaDB.
 
-Coverage saat ini **91,2%** dari 136 test, di atas ambang minimum 80%.
+Coverage saat ini **93,7%** dari 172 test, di atas ambang minimum 80%.
 
 ## Fitur yang sudah jalan
 
 - **Akun** — registrasi, login, verifikasi email, reset password, kelola profil
 - **Katalog setup** (`/setups`) — buat setup trading, kelola rules berbobot (1–5) dengan penanda wajib, arsipkan dan pulihkan. Maksimal 15 rule aktif per setup
 - **Jurnal trade** (`/trades`) — catat trade, centang checklist rules, skor kepatuhan dihitung otomatis dan tersimpan bersama snapshot rule. Peringatan muncul bila kepatuhan di bawah ambangmu, tapi tidak pernah memblokir penyimpanan
+- **Laporan** (`/reports`) — win rate dan expectancy (dalam R) dipecah per setup dan per tingkat kepatuhan, plus rule mana yang paling sering dilanggar dan bagaimana hasilnya berbeda. Angka disembunyikan sampai sampelnya cukup
 - **Ambang peringatan** — diatur sendiri di halaman profil
 - **Isolasi data** — setiap akun hanya melihat datanya sendiri, ditegakkan global scope dan policy, bukan filter manual
 

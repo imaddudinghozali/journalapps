@@ -92,6 +92,22 @@ Belum ada model domain yang memakai trait ini (milestone 1 hanya membangun mekan
 
 **Jangan memberi badge, streak, atau perayaan atas skor tinggi.** Skor diisi sendiri oleh pengguna; memberinya penghargaan mendorong pencentangan tidak jujur dan merusak satu-satunya aset produk ini.
 
+## Laporan
+
+`App\Support\TradeStatistics` dan `App\Support\ComplianceReport` adalah satu-satunya tempat statistik dihitung.
+
+**Jangan tampilkan angka statistik tanpa jumlah sampel.** `TradeStatistics::MIN_SAMPLE` (10) adalah ambang di bawahnya angka disembunyikan. Win rate 100% dari dua trade bukan sekadar tidak berguna — ia mendorong keputusan strategi yang salah, dan PRD menilainya risiko Tinggi.
+
+**Agregasi per rule WAJIB mengelompokkan lewat `setup_rule_id`, bukan `rule_label`.** Label adalah snapshot dan boleh berbeda antar trade; mengelompokkan lewat label memecah satu rule jadi beberapa baris palsu. Rule yang sudah dihapus (`setup_rule_id` null) dikelompokkan lewat label snapshot-nya.
+
+**Trade tertutup berarti `closed_at` DAN `pnl_amount` sama-sama terisi.** Form menolak mengisi salah satu saja. Pakai scope `closed()` dan `stillOpen()`, jangan memeriksa kolomnya langsung.
+
+**Trade tanpa skor dikeluarkan dari perbandingan patuh/tidak patuh,** bukan dianggap salah satunya. Setup tanpa rule tidak punya kepatuhan untuk dinilai.
+
+**Jangan menulis bahasa sebab-akibat atau rekomendasi otomatis di laporan.** Data ini korelasional dan self-reported. Antarmuka menyebut "kaitan", bukan "menyebabkan", dan tidak pernah menyarankan "hapus rule ini".
+
+`ComplianceReport::from()` mensyaratkan relasi `setup` dan `ruleChecks` sudah dimuat — strict mode melempar exception kalau tidak.
+
 ## Pengujian
 
 TDD: tulis test dulu sampai gagal (RED), baru implementasi (GREEN).
@@ -113,7 +129,7 @@ Model fixture `tests/Fixtures/OwnedThing.php` hanya untuk menguji mekanisme kepe
 php artisan test --coverage --min=80
 ```
 
-Angka saat ini 91,2% dari 136 test. Margin di atas ambang kecil, jadi kode baru tanpa test akan cepat menjatuhkannya — tulis test bersamaan dengan kodenya, jangan menunda.
+Angka saat ini 93,7% dari 172 test. Margin di atas ambang kecil, jadi kode baru tanpa test akan cepat menjatuhkannya — tulis test bersamaan dengan kodenya, jangan menunda.
 
 Celah coverage yang diketahui dan disengaja: cabang exception pada hook `updating` di `BelongsToUser` (82,8%) dan `View/Components\GuestLayout` (0%, kelas layout bawaan Breeze tanpa logika).
 

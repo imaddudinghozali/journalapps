@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToUser;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -60,9 +61,27 @@ class Trade extends Model
         return [self::DIRECTION_LONG, self::DIRECTION_SHORT];
     }
 
+    /**
+     * Tertutup berarti KEDUANYA terisi.
+     *
+     * Sebelumnya hanya closed_at yang diperiksa, sementara daftar trade
+     * memakai pnl_amount — dua penanda yang bisa berbeda. Laporan kepatuhan
+     * adalah tempat perbedaan itu akan terpeleset, jadi definisinya
+     * diseragamkan di sini dan ditegakkan validasi form.
+     */
     public function isClosed(): bool
     {
-        return $this->closed_at !== null;
+        return $this->closed_at !== null && $this->pnl_amount !== null;
+    }
+
+    public function scopeClosed(Builder $query): void
+    {
+        $query->whereNotNull('closed_at')->whereNotNull('pnl_amount');
+    }
+
+    public function scopeStillOpen(Builder $query): void
+    {
+        $query->where(fn (Builder $q) => $q->whereNull('closed_at')->orWhereNull('pnl_amount'));
     }
 
     /**
@@ -71,11 +90,25 @@ class Trade extends Model
      */
     public function rMultiple(): ?float
     {
+        $exact = $this->rMultipleExact();
+
+        return $exact === null ? null : round($exact, 2);
+    }
+
+    /**
+     * R tanpa pembulatan, untuk agregasi.
+     *
+     * Membulatkan lebih dulu membuat hasil kecil seperti R 0,003 menjadi 0,00,
+     * sehingga trade yang untung dihitung bukan kemenangan. Pembulatan hanya
+     * untuk tampilan.
+     */
+    public function rMultipleExact(): ?float
+    {
         if ($this->pnl_amount === null || (float) $this->risk_amount == 0.0) {
             return null;
         }
 
-        return round((float) $this->pnl_amount / (float) $this->risk_amount, 2);
+        return (float) $this->pnl_amount / (float) $this->risk_amount;
     }
 
     public function isUnscored(): bool

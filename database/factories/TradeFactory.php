@@ -21,7 +21,9 @@ class TradeFactory extends Factory
             'symbol' => fake()->randomElement(['XAUUSD', 'EURUSD', 'BTCUSD', 'GBPJPY']),
             'direction' => fake()->randomElement(Trade::directions()),
             'risk_amount' => fake()->randomFloat(2, 10, 200),
-            'pnl_amount' => fake()->randomFloat(2, -200, 400),
+            // Default: trade masih terbuka. Trade tertutup berarti closed_at
+            // DAN pnl_amount sama-sama terisi; pakai state closed().
+            'pnl_amount' => null,
             'compliance_score' => null,
             'opened_at' => now()->subDays(fake()->numberBetween(1, 60)),
             'closed_at' => null,
@@ -29,10 +31,11 @@ class TradeFactory extends Factory
         ];
     }
 
-    public function closed(): static
+    public function closed(?float $pnl = null): static
     {
         return $this->state(fn (array $attributes) => [
             'closed_at' => $attributes['opened_at'],
+            'pnl_amount' => $pnl ?? fake()->randomFloat(2, -200, 400),
         ]);
     }
 

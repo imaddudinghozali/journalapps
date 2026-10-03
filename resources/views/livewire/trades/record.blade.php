@@ -103,9 +103,12 @@ new class extends Component
             // min dan max menjaga kolom decimal(18,2): tanpa itu 1e30 lolos
             // validasi lalu gagal di database, dan 0.001 tersimpan jadi 0.00.
             'riskAmount' => ['required', 'numeric', 'min:0.01', 'max:9999999999999999'],
-            'pnlAmount' => ['nullable', 'numeric', 'min:-9999999999999999', 'max:9999999999999999'],
+            'pnlAmount' => ['nullable', 'numeric', 'min:-9999999999999999', 'max:9999999999999999', 'required_with:closedAt'],
             'openedAt' => ['required', 'date'],
-            'closedAt' => ['nullable', 'date', 'after_or_equal:openedAt'],
+            // Trade tertutup berarti waktu tutup DAN hasil sama-sama ada.
+            // Mengisi salah satu saja menghasilkan trade setengah jadi yang
+            // membuat laporan salah hitung.
+            'closedAt' => ['nullable', 'date', 'after_or_equal:openedAt', 'required_with:pnlAmount'],
             'notes' => ['nullable', 'string', 'max:2000'],
             'checks' => ['array', 'max:'.TradingSetup::MAX_ACTIVE_RULES],
             'checks.*' => ['boolean'],
@@ -116,6 +119,8 @@ new class extends Component
             'riskAmount.required' => 'Isi berapa yang kamu risikokan.',
             'riskAmount.min' => 'Risiko minimal 0,01.',
             'closedAt.after_or_equal' => 'Waktu tutup tidak boleh mendahului waktu buka.',
+            'closedAt.required_with' => 'Isi juga waktu tutupnya kalau trade sudah ada hasilnya.',
+            'pnlAmount.required_with' => 'Isi juga hasilnya kalau trade sudah ditutup.',
             'notes.max' => 'Catatan maksimal 2000 karakter.',
         ]);
 
