@@ -5,6 +5,27 @@
 **Complexity**: Large
 **Dial**: `VARIANCE 8 - MOTION 8 - DENSITY 5`
 
+## Progres
+
+| Task | Status | Catatan |
+|---|---|---|
+| 1 Fondasi token dan komponen wadah | selesai | `c637e69` |
+| 2 Hierarki tiga tingkat | belum | |
+| 3 Posisi terbuka di dashboard | belum | satu-satunya task yang menambah perilaku |
+| 4 Form catat trade dikelompokkan ulang | belum | |
+| 5 Ikon dan navigasi | belum | Phosphor belum dipasang |
+| 6 Aksesibilitas dan jalan buntu | sebagian | skip-link, `<main>`, judul dan meta sudah ada di welcome; halaman 404 dan judul per rute belum |
+| 7 Skeleton saat memuat | belum | |
+| 8 Lapisan visual | selesai | `c637e69` - grain, ambient, glass, spotlight, bayangan bertint |
+| 9 Font Geist dan tipografi kinetik | selesai | `c637e69` + `ec2040b` - animasi bobot variable font di judul welcome |
+| 10 Gambar latar dan gerak scroll | selesai | `ec2040b` + `219692c` |
+
+Catatan Task 10: "gambar latar" diisi tangkapan layar dashboard aplikasi
+sendiri (`public/images/dashboard-dark.jpg`), bukan foto stok - itu satu-satunya
+gambar yang benar-benar menjelaskan produknya. Scroll hijack diwujudkan sebagai
+scroll berinersia (Lenis) di bundle terpisah, ditambah tumpukan kartu
+`position: sticky`; `/trades` tidak memuat bundle itu sama sekali.
+
 ## Ringkasan
 
 Aplikasi ini sudah berfungsi dan punya sistem token warna yang matang. Yang belum ada adalah **hierarki**: 27 kartu dengan pola yang persis sama membuat setiap hal terlihat sama pentingnya, dan hal yang paling butuh tindakan justru tidak terlihat sama sekali.
