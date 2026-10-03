@@ -8,9 +8,10 @@ Jurnal trading yang ada saat ini mencatat *hasil* (entry, exit, P&L) tapi tidak 
 
 ## Evidence
 
-- Pemilik produk memiliki catatan trade historis dari jurnal sebelumnya yang menunjukkan pola pelanggaran aturan berulang. **Status: perlu ekstraksi** — data belum dikuantifikasi menjadi angka baseline (berapa % trade yang melanggar rules, dan selisih P&L antara trade patuh vs tidak patuh).
+- ~~Pemilik produk memiliki catatan trade historis dari jurnal sebelumnya.~~ **Dikoreksi 3 Oktober 2026: data itu tidak ada.** Klaim ini tercatat di awal berdasarkan jawaban pemilik produk, lalu dicabut sendiri. Tidak ada baseline historis, dan tidak akan ada kecuali data dicatat dari sekarang.
 - Observasi di komunitas trading: keluhan bahwa strategi sebenarnya bekerja dan masalahnya ada pada kedisiplinan, sering muncul. **Status: Assumption — needs validation via wawancara 5–10 trader atau analisis thread komunitas.**
-- Belum ada bukti kuantitatif dari pengguna di luar pemilik produk. Semua angka target di bawah bersifat hipotesis sampai baseline dari jurnal lama selesai diekstrak.
+- Belum ada bukti kuantitatif dari siapa pun, termasuk pemilik produk. **Seluruh angka target di bawah adalah hipotesis tanpa dasar empiris.**
+- **Status jujur produk ini: dibangun atas asumsi, belum atas bukti.** Aplikasinya berfungsi dan teruji, tapi apakah masalah yang diasumsikannya nyata belum pernah divalidasi. Validasi itu hanya bisa datang dari pemakaian sungguhan.
 
 ## Users
 
@@ -39,7 +40,7 @@ Kami akan tahu hipotesis ini benar ketika **persentase trade yang dicatat tanpa 
 
 | Metric | Target | How measured |
 |---|---|---|
-| **Primary** — Trade tanpa setup/checklist | Turun ke < 10% dari total trade dalam 30 hari pemakaian aktif | Rasio trade tanpa setup terhadap total trade, dibandingkan terhadap baseline dari jurnal lama (baseline: TBD — perlu ekstraksi) |
+| **Primary** — Trade tanpa setup/checklist | Turun ke < 10% dari total trade dalam 30 hari pemakaian aktif | **Tidak terukur** — tidak ada baseline pembanding. Metrik ini hanya bisa dihidupkan kalau pencatatan benar-benar berjalan selama 30 hari |
 | **Primary** — Keputusan strategi berbasis data | ≥ 1 setup atau rule dinonaktifkan/direvisi per pengguna dalam 60 hari | Log perubahan status setup/rule, dikaitkan dengan kunjungan ke halaman laporan |
 | Secondary — Cakupan pencatatan | ≥ 90% trade baru memiliki checklist terisi lengkap | Trade dengan checklist lengkap dibagi total trade baru |
 | Secondary — Nilai laporan terbukti | Selisih expectancy antara kelompok patuh dan tidak patuh terdeteksi jelas | Perbandingan expectancy antar bucket kepatuhan setelah sampel mencukupi (ambang sampel: TBD — needs validation) |
@@ -81,7 +82,7 @@ Catatan: metrik "compliance score naik" **sengaja tidak dijadikan metrik utama**
 | 3 | Pencatatan trade dengan checklist | Setiap trade baru tersimpan bersama bukti kriteria apa yang terpenuhi, dan pengguna langsung melihat skor kepatuhannya | complete | `.claude/plans/trade-setup-rules-milestone-3.plan.md` |
 | 4 | Peringatan kepatuhan rendah | Pengguna mendapat peringatan sebelum menyimpan trade berkepatuhan rendah, tanpa pernah kehilangan kemampuan mencatatnya | complete | `.claude/plans/trade-setup-rules-milestone-3.plan.md` (digabung) |
 | 5 | Laporan kepatuhan vs P&L | Pengguna dapat menjawab setup mana yang menghasilkan dan rule mana yang paling mahal dilanggar, dari satu halaman | complete | `.claude/plans/trade-setup-rules-milestone-5.plan.md` |
-| 6 | Baseline dari jurnal lama | Catatan trade historis masuk ke sistem sehingga target metrik punya pembanding nyata, bukan angka tebakan | pending | — |
+| 6 | ~~Baseline dari jurnal lama~~ | **Dibatalkan 3 Oktober 2026** — data historis yang jadi premisnya tidak ada | cancelled | — |
 
 ## Open Questions
 
