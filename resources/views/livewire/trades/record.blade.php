@@ -323,7 +323,19 @@ new class extends Component
         </p>
     </header>
 
-    <form wire:submit="save" class="mt-6 space-y-6 max-w-2xl">
+    {{-- Dua kelompok, bukan sepuluh field datar. Urutan DOM tidak berubah, jadi
+         urutan tab keyboard juga tidak - yang berubah cuma orang bisa melihat
+         di mana satu bagian berakhir. --}}
+    <form wire:submit="save" class="mt-8 space-y-10 max-w-2xl">
+        <fieldset class="min-w-0 space-y-6">
+            <legend class="mb-6">
+                <span class="font-mono text-xs tracking-[0.2em] text-accent">01</span>
+                <span class="ms-2 font-medium text-ink">Penilaian</span>
+                <span class="mt-1 block text-sm text-ink-muted">
+                    Apa yang kamu nilai sebelum masuk posisi.
+                </span>
+            </legend>
+
         <div>
             <x-input-label for="tradingSetupId" value="Setup yang dipakai" />
             <select wire:model.live="tradingSetupId" id="tradingSetupId"
@@ -394,6 +406,20 @@ new class extends Component
                 @endif
             </div>
         @endif
+        </fieldset>
+
+        {{-- Garis pemisah ditaruh di pembungkus, bukan di fieldset: legend
+             selalu diposisikan tepat di garis atas fieldset-nya sendiri dan
+             akan memotong garis itu. --}}
+        <div class="border-t border-line pt-8">
+        <fieldset class="min-w-0 space-y-6">
+            <legend class="mb-6">
+                <span class="font-mono text-xs tracking-[0.2em] text-accent">02</span>
+                <span class="ms-2 font-medium text-ink">Eksekusi</span>
+                <span class="mt-1 block text-sm text-ink-muted">
+                    Apa yang benar-benar terjadi di pasar. Risiko, hasil, dan R dihitung dari angka-angka ini.
+                </span>
+            </legend>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -496,8 +522,10 @@ new class extends Component
                 </div>
             </div>
         @endif
+        </fieldset>
+        </div>
 
-        <div>
+        <div class="border-t border-line pt-8">
             <x-input-label for="notes" value="Catatan (opsional)" />
             <textarea wire:model="notes" id="notes" rows="3"
                 class="mt-1 block w-full border-line-strong focus:border-accent focus:ring-accent rounded-md shadow-sm"></textarea>
