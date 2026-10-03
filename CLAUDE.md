@@ -42,6 +42,23 @@ Hasil review keamanan milestone 1 — setiap butir di bawah menutup jalur serang
 
 Trait juga menolak **perpindahan kepemilikan**: mengubah `user_id` pada record yang sudah ada melempar exception lewat hook `updating`.
 
+## Model domain
+
+| Model | Tabel | Catatan |
+|---|---|---|
+| `TradingSetup` | `trading_setups` | Satu pola entry. Unique `(user_id, name)`. Konstanta `MAX_ACTIVE_RULES` |
+| `SetupRule` | `setup_rules` | Kriteria entry. Membawa `user_id` **sendiri**, bukan hanya `trading_setup_id` — tanpa itu `SetupRule::find()` tidak terscope. Konstanta `MIN_WEIGHT`/`MAX_WEIGHT` |
+
+**Arsip, bukan hapus.** Keduanya memakai `archived_at` (nullable timestamp), bukan soft delete bawaan Laravel — semantiknya berbeda: ini "tidak dipakai lagi", bukan "terhapus". Record yang diarsipkan hilang dari form pencatatan trade tapi tetap bisa dirujuk laporan historis. Scope `active()` dan `archived()`, penanda `isArchived()`.
+
+**Versioning rule belum ada, dan ini utang yang disadari.** Kalau pengguna mengedit bobot atau label rule setelah ada trade yang memakainya, laporan historis jadi tidak setara. Saat milestone 3 menambahkan relasi trade, tegakkan aturan "arsipkan lalu buat baru" alih-alih mengedit rule yang sudah terpakai.
+
+**Integritas komposit.** `setup_rules` punya FK `(trading_setup_id, user_id)` → `trading_setups(id, user_id)`, jadi database sendiri menolak rule yang pemiliknya berbeda dari pemilik setup-nya. Tabel domain baru yang menyimpan FK ke tabel domain lain **wajib** memakai pola yang sama: tambahkan `unique(['id','user_id'])` di tabel induk, lalu FK komposit dari tabel anak.
+
+**Peringatan cascade untuk milestone 3.** FK dari tabel `trades` ke `trading_setups` **jangan** `cascadeOnDelete`. Pakai `restrictOnDelete` atau `nullOnDelete` — kalau tidak, menghapus satu setup akan memusnahkan riwayat trade, persis hal yang dicegah oleh keputusan arsip-bukan-hapus.
+
+**Keunikan nama dicek lewat model, bukan `Rule::unique`.** `Rule::unique` menembak query builder mentah sehingga melihat data pengguna lain — nama setup orang lain akan bocor sebagai pesan "sudah dipakai". Lihat `uniqueNameRule()` di `resources/views/livewire/setups/manage.blade.php`.
+
 Untuk instance model yang sudah dipegang (hasil `withoutGlobalScope`, route binding, atau relasi), otorisasi tetap diperiksa lewat `App\Policies\OwnedRecordPolicy`. Policy domain baru sebaiknya mewarisi kelas itu, lalu didaftarkan ke Gate.
 
 ### Scope ini gagal keras, dan itu disengaja
@@ -79,9 +96,11 @@ Model fixture `tests/Fixtures/OwnedThing.php` hanya untuk menguji mekanisme kepe
 php artisan test --coverage --min=80
 ```
 
-Angka saat ini 82,4% dari 41 test. Margin di atas ambang hanya ~2 poin, jadi kode baru tanpa test akan cepat menjatuhkannya — tulis test bersamaan dengan kodenya, jangan menunda.
+Angka saat ini 84,8% dari 76 test. Margin di atas ambang kecil, jadi kode baru tanpa test akan cepat menjatuhkannya — tulis test bersamaan dengan kodenya, jangan menunda.
 
 Celah coverage yang diketahui dan disengaja: cabang exception pada hook `updating` di `BelongsToUser` (82,8%) dan `View/Components\GuestLayout` (0%, kelas layout bawaan Breeze tanpa logika).
+
+Strict mode aktif saat testing, jadi **lazy loading melempar exception di test**. Muat relasi secara eksplisit (`$model->load('rules.setup')`); jangan melonggarkan strict mode untuk membuat test lolos.
 
 ## Gaya kode
 

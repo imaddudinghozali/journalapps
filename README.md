@@ -11,8 +11,8 @@ Tujuannya menjawab satu pertanyaan yang tidak bisa dijawab jurnal biasa: **apaka
 
 | Milestone | Status |
 |---|---|
-| 1 — Akun dan isolasi data | Selesai (kecuali gate coverage, lihat Catatan) |
-| 2 — Katalog setup dan rules | Belum |
+| 1 — Akun dan isolasi data | Selesai |
+| 2 — Katalog setup dan rules | Selesai |
 | 3 — Pencatatan trade dengan checklist | Belum |
 | 4 — Peringatan kepatuhan rendah | Belum |
 | 5 — Laporan kepatuhan vs P&L | Belum |
@@ -82,7 +82,13 @@ php artisan test --coverage --min=80
 
 Test berjalan di SQLite in-memory (`phpunit.xml`), jadi menjalankan test tidak pernah menyentuh database MariaDB.
 
-Coverage saat ini **82,4%** dari 41 test, di atas ambang minimum 80%.
+Coverage saat ini **84,8%** dari 76 test, di atas ambang minimum 80%.
+
+## Fitur yang sudah jalan
+
+- **Akun** — registrasi, login, verifikasi email, reset password, kelola profil
+- **Katalog setup** (`/setups`) — buat setup trading, kelola rules berbobot (1–5) dengan penanda wajib, arsipkan dan pulihkan. Maksimal 15 rule aktif per setup
+- **Isolasi data** — setiap akun hanya melihat datanya sendiri, ditegakkan global scope dan policy, bukan filter manual
 
 ## Catatan
 

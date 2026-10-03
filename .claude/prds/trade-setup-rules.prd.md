@@ -77,7 +77,7 @@ Catatan: metrik "compliance score naik" **sengaja tidak dijadikan metrik utama**
 | # | Milestone | Outcome | Status | Plan |
 |---|---|---|---|---|
 | 1 | Akun dan isolasi data | Pengguna dapat mendaftar, masuk, dan yakin bahwa data jurnalnya tidak terlihat oleh pengguna lain | complete | `.claude/plans/trade-setup-rules.plan.md` |
-| 2 | Katalog setup dan rules | Pengguna dapat menuliskan strategi tak tertulisnya menjadi daftar setup dan rules berbobot yang bisa diarsipkan | pending | — |
+| 2 | Katalog setup dan rules | Pengguna dapat menuliskan strategi tak tertulisnya menjadi daftar setup dan rules berbobot yang bisa diarsipkan | complete | `.claude/plans/trade-setup-rules-milestone-2.plan.md` |
 | 3 | Pencatatan trade dengan checklist | Setiap trade baru tersimpan bersama bukti kriteria apa yang terpenuhi, dan pengguna langsung melihat skor kepatuhannya | pending | — |
 | 4 | Peringatan kepatuhan rendah | Pengguna mendapat peringatan sebelum menyimpan trade berkepatuhan rendah, tanpa pernah kehilangan kemampuan mencatatnya | pending | — |
 | 5 | Laporan kepatuhan vs P&L | Pengguna dapat menjawab setup mana yang menghasilkan dan rule mana yang paling mahal dilanggar, dari satu halaman | pending | — |
