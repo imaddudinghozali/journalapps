@@ -11,12 +11,19 @@
         <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 
         <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        <link href="https://fonts.bunny.net/css?family=geist:300,400,500,600,700|geist-mono:400,500" rel="stylesheet" />
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans antialiased">
+        <div class="ambient" aria-hidden="true"></div>
+        <div class="grain" aria-hidden="true"></div>
+
+        <a href="#konten"
+           class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[70] focus:rounded-md focus:bg-accent focus:px-4 focus:py-2 focus:text-accent-contrast">
+            Lompat ke konten
+        </a>
         <div class="min-h-screen bg-bg">
             <livewire:layout.navigation />
 
@@ -30,7 +37,7 @@
             @endif
 
             <!-- Page Content -->
-            <main>
+            <main id="konten">
                 {{ $slot }}
             </main>
         </div>

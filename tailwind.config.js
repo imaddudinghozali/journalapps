@@ -13,8 +13,15 @@ export default {
 
     theme: {
         extend: {
+            boxShadow: {
+                // Bayangan mengambil warna latar, bukan hitam murni.
+                soft: '0 1px 2px rgb(var(--shadow) / 0.06), 0 4px 12px rgb(var(--shadow) / 0.08)',
+                lift: '0 2px 4px rgb(var(--shadow) / 0.08), 0 12px 32px rgb(var(--shadow) / 0.14)',
+                glass: 'inset 0 1px 0 rgb(255 255 255 / 0.10), 0 8px 32px rgb(var(--shadow) / 0.16)',
+            },
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                sans: ['Geist', ...defaultTheme.fontFamily.sans],
+                mono: ['Geist Mono', ...defaultTheme.fontFamily.mono],
             },
             colors: {
                 bg: token('bg'),

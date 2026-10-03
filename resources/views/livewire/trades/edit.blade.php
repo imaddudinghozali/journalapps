@@ -217,7 +217,7 @@ new #[Layout('layouts.app')] class extends Component
 @endphp
 
 <div class="space-y-6">
-    <div class="p-4 sm:p-8 bg-surface shadow sm:rounded-lg">
+    <div class="p-4 sm:p-8 bg-surface shadow-soft sm:rounded-xl spotlight transition-shadow hover:shadow-lift">
         <header>
             <h2 class="text-lg font-medium text-ink">Ubah trade</h2>
             <p class="mt-1 text-sm text-ink-muted">
@@ -329,7 +329,7 @@ new #[Layout('layouts.app')] class extends Component
     </div>
 
     {{-- Checklist bisa direvisi, tapi revisinya tercatat. --}}
-    <div class="p-4 sm:p-8 bg-surface shadow sm:rounded-lg">
+    <div class="p-4 sm:p-8 bg-surface shadow-soft sm:rounded-xl spotlight transition-shadow hover:shadow-lift">
         <header>
             <h2 class="text-lg font-medium text-ink">Checklist saat entry</h2>
             <p class="mt-1 text-sm text-ink-muted max-w-[65ch]">

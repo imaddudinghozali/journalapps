@@ -104,7 +104,7 @@ new class extends Component
 @endphp
 
 <div class="space-y-6">
-    <div class="p-4 sm:p-8 bg-surface shadow sm:rounded-lg">
+    <div class="p-4 sm:p-8 bg-surface shadow-soft sm:rounded-xl spotlight transition-shadow hover:shadow-lift">
         <div class="max-w-xl">
             <header>
                 <h2 class="text-lg font-medium text-ink">Instrumen baru</h2>
@@ -143,7 +143,7 @@ new class extends Component
         </div>
     </div>
 
-    <div class="p-4 sm:p-8 bg-surface shadow sm:rounded-lg">
+    <div class="p-4 sm:p-8 bg-surface shadow-soft sm:rounded-xl spotlight transition-shadow hover:shadow-lift">
         <header>
             <h2 class="text-lg font-medium text-ink">Instrumen aktif</h2>
         </header>
@@ -168,7 +168,7 @@ new class extends Component
     </div>
 
     @if ($this->archived->isNotEmpty())
-        <div class="p-4 sm:p-8 bg-surface shadow sm:rounded-lg">
+        <div class="p-4 sm:p-8 bg-surface shadow-soft sm:rounded-xl spotlight transition-shadow hover:shadow-lift">
             <header>
                 <h2 class="text-lg font-medium text-ink">Arsip</h2>
                 <p class="mt-1 text-sm text-ink-muted">

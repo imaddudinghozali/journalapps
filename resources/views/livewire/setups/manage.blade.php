@@ -240,7 +240,7 @@ new class extends Component
 
 <div class="space-y-6">
     {{-- Buat setup baru --}}
-    <div class="p-4 sm:p-8 bg-surface shadow sm:rounded-lg">
+    <div class="p-4 sm:p-8 bg-surface shadow-soft sm:rounded-xl spotlight transition-shadow hover:shadow-lift">
         <div class="max-w-xl">
             <header>
                 <h2 class="text-lg font-medium text-ink">Setup baru</h2>
@@ -275,7 +275,7 @@ new class extends Component
     </div>
 
     {{-- Daftar setup aktif --}}
-    <div class="p-4 sm:p-8 bg-surface shadow sm:rounded-lg">
+    <div class="p-4 sm:p-8 bg-surface shadow-soft sm:rounded-xl spotlight transition-shadow hover:shadow-lift">
         <header>
             <h2 class="text-lg font-medium text-ink">Setup aktif</h2>
             <p class="mt-1 text-sm text-ink-muted">Pilih satu setup untuk mengelola rules-nya.</p>
@@ -307,7 +307,7 @@ new class extends Component
 
     {{-- Rules untuk setup terpilih --}}
     @if ($this->selectedSetup)
-        <div class="p-4 sm:p-8 bg-surface shadow sm:rounded-lg pop" wire:key="panel-{{ $selectedSetupId }}">
+        <div class="p-4 sm:p-8 bg-surface shadow-soft sm:rounded-xl spotlight transition-shadow hover:shadow-lift pop" wire:key="panel-{{ $selectedSetupId }}">
             <header>
                 <h2 class="text-lg font-medium text-ink">Rules: {{ $this->selectedSetup->name }}</h2>
                 <p class="mt-1 text-sm text-ink-muted">
@@ -374,7 +374,7 @@ new class extends Component
 
     {{-- Arsip --}}
     @if ($this->archivedSetups->isNotEmpty())
-        <div class="p-4 sm:p-8 bg-surface shadow sm:rounded-lg">
+        <div class="p-4 sm:p-8 bg-surface shadow-soft sm:rounded-xl spotlight transition-shadow hover:shadow-lift">
             <header>
                 <h2 class="text-lg font-medium text-ink">Arsip</h2>
                 <p class="mt-1 text-sm text-ink-muted">

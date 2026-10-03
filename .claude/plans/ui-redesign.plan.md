@@ -2,7 +2,8 @@
 
 **Sumber**: permintaan langsung pemilik produk, dengan skill `redesign-existing-projects`
 **Mode**: Redesign - evolusi terarah, bukan penulisan ulang
-**Complexity**: Medium
+**Complexity**: Large
+**Dial**: `VARIANCE 8 - MOTION 8 - DENSITY 5`
 
 ## Ringkasan
 
@@ -42,19 +43,41 @@ Dijalankan terhadap kode, bukan dikira-kira.
 | 11 | **Tidak ada tampilan detail trade** | hanya ada `/edit` | Untuk sekadar melihat, pengguna harus masuk ke mode ubah |
 | 12 | **Tidak ada skeleton saat memuat** | hanya `wire:loading` pada tombol | Perpindahan halaman terasa kosong sesaat |
 
-## Yang SENGAJA Tidak Diambil dari Skill
+## Arah Visual
 
-Skill ini menyarankan beberapa teknik yang akan merusak produk ini. Dicatat supaya keputusannya terlihat, bukan terlewat:
+Pemilik produk menginginkan tampilan yang menarik, tanpa pembatasan, dan **berencana merilisnya ke publik kalau hasilnya bagus**. Rencana ini mengikuti itu.
 
-| Saran skill | Alasan ditolak |
+Teknik yang dipakai, tanpa pengecualian:
+
+| Teknik | Di mana |
 |---|---|
-| Grain/noise overlay, gambar latar, gradien mesh | Teknik halaman pemasaran. Ini alat yang dipakai tiap hari; tekstur dekoratif jadi kebisingan |
-| Parallax card stack, split-screen scroll, smooth scroll inersia | Scroll yang dibajak memperlambat orang yang sedang mencatat trade |
-| Glassmorphism, spotlight border | Dekorasi tanpa fungsi di UI data |
-| Variable font animation, text mask reveal | Sama |
-| Ganti font ke Geist/Satoshi | Figtree sudah bukan Inter dan sudah termuat. Menukarnya menambah unduhan font demi perbedaan yang tipis. **Yang ditambahkan hanya font mono untuk angka** |
+| Grain / noise overlay | seluruh aplikasi |
+| Gambar latar, gradien mesh dan radial | welcome, header dashboard dan laporan, kartu angka pokok |
+| Glassmorphism | navigasi menempel, panel ringkasan, kartu angka |
+| Parallax dan scroll-reveal | welcome, header halaman |
+| Scroll hijack (pinned / horizontal pan) | welcome |
+| Animasi variable font, text mask reveal | headline welcome |
+| Font Geist + Geist Mono | seluruh aplikasi, menggantikan Figtree |
+| Spotlight border, hover physics | kartu dan tombol |
 
-Skill juga menyarankan "tambah gambar latar berkualitas" pada seksi yang terasa datar. Untuk jurnal pribadi, foto stok justru membuatnya terasa seperti brosur. Kepadatan visual dicapai lewat hierarki, bukan gambar.
+Dua hal tetap dikerjakan, dan keduanya bukan pembatasan selera melainkan hal yang akan jadi masalah nyata saat dirilis:
+
+- Gerakan dibungkus `prefers-reduced-motion`, glass punya fallback `prefers-reduced-transparency`. Satu media query, nol biaya visual, dan mencegah pengguna yang sensitif gerakan mendapat halaman yang tidak terpakai.
+- `/trades` tetap bebas scroll hijack. Itu satu-satunya layar tempat orang mengetik angka; kehilangan posisi di tengah form adalah bug, bukan gaya.
+
+## Sebelum Dirilis ke Publik
+
+Bukan bagian dari pekerjaan UI, tapi harus beres sebelum ada orang lain memakainya. Dicatat di sini supaya tidak hilang:
+
+| Hal | Kondisi sekarang | Risiko kalau dibiarkan |
+|---|---|---|
+| `APP_DEBUG=true` | masih true di `.env` dan `.env.example` | Halaman error menampilkan stack trace, query SQL, dan isi environment ke publik |
+| `APP_ENV=local` | masih local | Mode strict dan perilaku debug ikut terbawa |
+| Database `root` tanpa password | ya | Kredensial default; butuh user khusus berhak minimum |
+| `SESSION_ENCRYPT=false`, tanpa `SESSION_SECURE_COOKIE` | ya | Cookie sesi tidak terenkripsi dan bisa terkirim lewat HTTP |
+| Halaman legal | tidak ada | Kebijakan privasi diperlukan begitu menyimpan data orang lain |
+| Verifikasi email | aktif, tapi `MAIL_MAILER=log` | Pengguna baru tidak akan pernah menerima emailnya |
+| Rate limit pendaftaran | hanya pada login | Pendaftaran massal terbuka |
 
 ## Keputusan Desain yang Perlu Disepakati
 
@@ -77,7 +100,8 @@ Token `--shadow-color` mengikuti mode, menggantikan 46 `shadow` hitam bawaan.
 
 | File | Action | Why |
 |---|---|---|
-| `resources/css/app.css` | UPDATE | Token bayangan bertint, skala tipografi, kelas `panel`/`blok`, font mono untuk angka |
+| `resources/css/app.css` | UPDATE | Token bayangan bertint, skala tipografi, kelas `panel`/`blok`, lapisan grain, utilitas glass |
+| `resources/views/components/effects.blade.php` | CREATE | Lapisan grain dan gradien ambient, sekali pasang di layout |
 | `tailwind.config.js` | UPDATE | Daftarkan boxShadow dan fontFamily mono |
 | `resources/views/components/ui-panel.blade.php` | CREATE | Wadah berelevasi, menggantikan 27 pengulangan |
 | `resources/views/components/ui-block.blade.php` | CREATE | Wadah tanpa elevasi |
@@ -126,6 +150,18 @@ Urutan mengikuti **Fix Priority** skill, disesuaikan: dampak terbesar dengan ris
 - **Action**: Skeleton yang mengikuti bentuk akhir pada dashboard dan laporan, bukan spinner.
 - **Validate**: Terlihat saat navigasi; patuh `prefers-reduced-motion`.
 
+### Task 8: Lapisan visual
+- **Action**: Grain overlay, gradien ambient, glassmorphism pada navigasi dan panel ringkasan, bayangan bertint.
+- **Validate**: Fallback `prefers-reduced-transparency` diperiksa; FPS scroll tidak turun di mode gelap.
+
+### Task 9: Font Geist dan tipografi kinetik
+- **Action**: Ganti Figtree ke Geist + Geist Mono, self-host. Animasi bobot variable font pada headline welcome.
+- **Validate**: Ukuran bundle sebelum dan sesudah; `font-display: swap`; CLS tidak naik.
+
+### Task 10: Gambar latar dan gerak scroll
+- **Action**: Gambar latar pada welcome dan header halaman, parallax, scroll hijack di welcome.
+- **Validate**: LCP tetap di bawah 2,5 detik; seluruhnya mati di bawah `prefers-reduced-motion`; `/trades` tidak tersentuh.
+
 ## Validation
 
 ```bash
@@ -155,7 +191,9 @@ Ditambah pemeriksaan visual di browser pada dua mode untuk tiap halaman: dashboa
 - [ ] Pengulangan kartu identik mendekati nol; hierarki terbaca di dua mode
 - [ ] Skip-link, `<main>`, judul unik, dan meta tersedia di tiap halaman
 - [ ] Tidak ada badge, streak, atau perayaan skor yang masuk lewat pintu belakang
-- [ ] Tidak ada grain, parallax, scroll hijack, atau gambar stok
+- [ ] Grain, gambar latar, gradien, glass, parallax, scroll hijack, dan animasi font terpasang sesuai tabel Teknik Visual
+- [ ] Seluruh gerakan patuh `prefers-reduced-motion`; glass punya fallback `prefers-reduced-transparency`
+- [ ] `/trades` tetap bebas scroll hijack dan parallax: itu permukaan pengetikan harian
 
 ---
 *Status: AWAITING CONFIRMATION - belum ada kode yang ditulis.*
