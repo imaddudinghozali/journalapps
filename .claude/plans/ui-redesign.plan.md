@@ -10,7 +10,7 @@
 | Task | Status | Catatan |
 |---|---|---|
 | 1 Fondasi token dan komponen wadah | selesai | `c637e69` |
-| 2 Hierarki tiga tingkat | belum | |
+| 2 Hierarki tiga tingkat | selesai | `8439805` - 27 kartu identik jadi 0; satu panel per halaman |
 | 3 Posisi terbuka di dashboard | belum | satu-satunya task yang menambah perilaku |
 | 4 Form catat trade dikelompokkan ulang | belum | |
 | 5 Ikon dan navigasi | belum | Phosphor belum dipasang |
