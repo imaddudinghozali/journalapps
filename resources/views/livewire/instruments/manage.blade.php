@@ -104,7 +104,8 @@ new class extends Component
 @endphp
 
 <div class="space-y-6">
-    <div class="p-4 sm:p-8 bg-surface shadow-soft sm:rounded-xl spotlight transition-shadow hover:shadow-lift">
+    {{-- Panel: satu-satunya aksi di halaman ini. --}}
+    <div class="panel spotlight p-4 sm:p-8">
         <div class="max-w-xl">
             <header>
                 <h2 class="text-lg font-medium text-ink">Instrumen baru</h2>
@@ -143,7 +144,7 @@ new class extends Component
         </div>
     </div>
 
-    <div class="p-4 sm:p-8 bg-surface shadow-soft sm:rounded-xl spotlight transition-shadow hover:shadow-lift">
+    <div class="blok p-4 sm:p-8">
         <header>
             <h2 class="text-lg font-medium text-ink">Instrumen aktif</h2>
         </header>
@@ -168,9 +169,11 @@ new class extends Component
     </div>
 
     @if ($this->archived->isNotEmpty())
-        <div class="p-4 sm:p-8 bg-surface shadow-soft sm:rounded-xl spotlight transition-shadow hover:shadow-lift">
+        {{-- Tingkat ketiga: tanpa permukaan sama sekali. Arsip memang harus
+             terbaca sebagai sesuatu yang sudah disingkirkan. --}}
+        <div class="border-t border-line px-4 pt-8 sm:px-8">
             <header>
-                <h2 class="text-lg font-medium text-ink">Arsip</h2>
+                <h2 class="text-lg font-medium text-ink-muted">Arsip</h2>
                 <p class="mt-1 text-sm text-ink-muted">
                     Tidak muncul saat mencatat trade, tapi trade lama yang memakainya tetap utuh.
                 </p>

@@ -123,4 +123,6 @@ Coverage saat ini **93,7%** dari 172 test, di atas ambang minimum 80%.
 
 **Driver coverage.** Coverage memakai PCOV 1.0.12 (`extension=pcov` di `php.ini`, DLL di `C:\xampp\php\ext\php_pcov.dll`). Kalau menyiapkan mesin baru, unduh varian yang cocok dengan build PHP-nya — XAMPP ini memakai PHP 8.2 **ZTS/Thread Safe**, jadi filenya `php_pcov-<versi>-8.2-ts-vs16-x64.zip` dari `https://downloads.php.net/~windows/pecl/releases/pcov/`. Varian `nts` tidak akan termuat.
 
+**Akun fixture lokal.** `uji@localhost.test` ("Trader Uji") berisi trade sintetis untuk memeriksa tampilan, dan sandinya `password-uji-lokal`. Akun ini hanya ada di database dev di mesin ini — tidak pernah di-seed, tidak pernah dikirim ke mana pun, dan tidak boleh ada di instalasi mana pun selain dev lokal. Kalau aplikasi ini dirilis, hapus akunnya lebih dulu.
+
 **`.env` tidak boleh di-commit.** Sudah tercakup `.gitignore` bawaan Laravel. Gunakan `.env.example` sebagai acuan variabel.

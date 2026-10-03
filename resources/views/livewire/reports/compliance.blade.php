@@ -54,7 +54,7 @@ new class extends Component
 @endphp
 
 <div class="space-y-6">
-    <div class="p-4 sm:p-8 bg-surface shadow-soft sm:rounded-xl spotlight transition-shadow hover:shadow-lift">
+    <div class="blok p-4 sm:p-8">
         <header>
             <h2 class="text-lg font-medium text-ink">Kepatuhan dan hasil</h2>
             <p class="mt-1 text-sm text-ink-muted">
@@ -90,8 +90,9 @@ new class extends Component
     </div>
 
     @unless ($laporan->isEmpty())
-        {{-- Perbandingan inti produk --}}
-        <div class="p-4 sm:p-8 bg-surface shadow-soft sm:rounded-xl spotlight transition-shadow hover:shadow-lift">
+        {{-- Perbandingan inti produk. Satu-satunya panel di halaman ini:
+             seluruh laporan lain ada untuk menjelaskan angka di sini. --}}
+        <div class="panel spotlight p-4 sm:p-8">
             <header>
                 <h2 class="text-lg font-medium text-ink">Patuh vs tidak patuh</h2>
                 <p class="mt-1 text-sm text-ink-muted">
@@ -125,7 +126,7 @@ new class extends Component
         </div>
 
         {{-- Per setup --}}
-        <div class="p-4 sm:p-8 bg-surface shadow-soft sm:rounded-xl spotlight transition-shadow hover:shadow-lift">
+        <div class="blok p-4 sm:p-8">
             <header>
                 <h2 class="text-lg font-medium text-ink">Per setup</h2>
             </header>
@@ -152,7 +153,7 @@ new class extends Component
 
         {{-- Per rule --}}
         @if (count($laporan->perRule) > 0)
-            <div class="p-4 sm:p-8 bg-surface shadow-soft sm:rounded-xl spotlight transition-shadow hover:shadow-lift">
+            <div class="blok p-4 sm:p-8">
                 <header>
                     <h2 class="text-lg font-medium text-ink">Per rule</h2>
                     <p class="mt-1 text-sm text-ink-muted">

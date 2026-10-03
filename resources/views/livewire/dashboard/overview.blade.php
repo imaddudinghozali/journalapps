@@ -101,7 +101,7 @@ new class extends Component
 
 <div class="space-y-6">
     @if ($s->isEmpty())
-        <div class="p-8 bg-surface shadow-soft sm:rounded-xl spotlight transition-shadow hover:shadow-lift">
+        <div class="blok p-8">
             <h2 class="text-lg font-medium text-ink">Belum ada yang bisa diringkas</h2>
             <p class="mt-2 text-sm text-ink-muted max-w-[60ch]">
                 Angka di halaman ini datang dari trade yang sudah kamu tutup. Buat setup di
@@ -110,9 +110,10 @@ new class extends Component
             </p>
         </div>
     @else
-        {{-- Angka pokok. Tanpa chart: satu besaran tidak butuh plot. --}}
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="p-5 bg-surface shadow-soft sm:rounded-xl spotlight transition-shadow hover:shadow-lift">
+        {{-- Angka pokok: satu panel, bukan empat kartu. Keempatnya adalah satu
+             ringkasan yang sama, jadi dipisah garis rambut, bukan jarak. --}}
+        <div class="panel spotlight overflow-hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="panel-sel p-5">
                 <div class="text-sm text-ink-muted">P&amp;L bersih</div>
                 <div class="mt-2 text-3xl font-semibold tabular {{ $nadaAngka($s->netPnl) }}">
                     {{ $uang($s->netPnl) }}
@@ -120,7 +121,7 @@ new class extends Component
                 <div class="mt-1 text-xs text-ink-faint">dari {{ $s->closedCount }} trade tertutup</div>
             </div>
 
-            <div class="p-5 bg-surface shadow-soft sm:rounded-xl spotlight transition-shadow hover:shadow-lift">
+            <div class="panel-sel p-5">
                 <div class="text-sm text-ink-muted">Rata-rata per trade</div>
                 <div class="mt-2 text-3xl font-semibold tabular {{ $nadaAngka($s->avgTrade) }}">
                     {{ $uang($s->avgTrade) ?? 'belum ada' }}
@@ -128,7 +129,7 @@ new class extends Component
                 <div class="mt-1 text-xs text-ink-faint">{{ $s->openCount }} masih terbuka</div>
             </div>
 
-            <div class="p-5 bg-surface shadow-soft sm:rounded-xl spotlight transition-shadow hover:shadow-lift">
+            <div class="panel-sel p-5">
                 <div class="text-sm text-ink-muted">Rata-rata trade menang</div>
                 <div class="mt-2 text-3xl font-semibold tabular {{ $s->avgWin === null ? 'text-ink-faint' : 'text-viz-positive' }}">
                     {{ $uang($s->avgWin) ?? 'belum ada' }}
@@ -138,7 +139,7 @@ new class extends Component
                 </div>
             </div>
 
-            <div class="p-5 bg-surface shadow-soft sm:rounded-xl spotlight transition-shadow hover:shadow-lift">
+            <div class="panel-sel p-5">
                 <div class="text-sm text-ink-muted">Rata-rata trade kalah</div>
                 <div class="mt-2 text-3xl font-semibold tabular {{ $s->avgLoss === null ? 'text-ink-faint' : 'text-viz-negative' }}">
                     {{ $uang($s->avgLoss) ?? 'belum ada' }}
@@ -154,8 +155,10 @@ new class extends Component
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {{-- Kepatuhan: alasan aplikasi ini ada, bukan metrik tambahan. --}}
-            <div class="p-5 bg-surface shadow-soft sm:rounded-xl spotlight transition-shadow hover:shadow-lift">
+            {{-- Kepatuhan: alasan aplikasi ini ada, bukan metrik tambahan. Tetap
+                 setingkat blok, tapi tepi aksen membedakannya dari grafik di
+                 sebelahnya tanpa menaikkannya jadi panel kedua. --}}
+            <div class="blok border-l-2 border-l-accent p-5">
                 <div class="text-sm text-ink-muted">Kepatuhan rata-rata</div>
                 <div class="mt-2 text-3xl font-semibold tabular text-ink">
                     {{ $s->avgCompliance === null ? 'belum ada' : number_format($s->avgCompliance, 0).'%' }}
@@ -167,7 +170,7 @@ new class extends Component
             </div>
 
             {{-- Satu seri, satu sumbu, tanpa pustaka chart. --}}
-            <div class="lg:col-span-2 p-5 bg-surface shadow-soft sm:rounded-xl spotlight transition-shadow hover:shadow-lift">
+            <div class="blok lg:col-span-2 p-5">
                 <div class="flex items-baseline justify-between gap-4">
                     <div class="text-sm text-ink-muted">P&amp;L kumulatif</div>
                     @if ($adaChart)
@@ -202,7 +205,7 @@ new class extends Component
     @endif
 
     {{-- Kalender P&L harian --}}
-    <div class="p-4 sm:p-6 bg-surface shadow-soft sm:rounded-xl spotlight transition-shadow hover:shadow-lift">
+    <div class="blok p-4 sm:p-6">
         <div class="flex items-center justify-between gap-4">
             <h2 class="text-lg font-medium text-ink">{{ $this->monthLabel() }}</h2>
             <div class="flex items-center gap-2">

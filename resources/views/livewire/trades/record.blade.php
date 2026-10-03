@@ -313,7 +313,8 @@ new class extends Component
 };
 ?>
 
-<div class="p-4 sm:p-8 bg-surface shadow-soft sm:rounded-xl spotlight transition-shadow hover:shadow-lift">
+{{-- Panel: ini alasan halaman ini dibuka. --}}
+<div class="panel spotlight p-4 sm:p-8">
     <header>
         <h2 class="text-lg font-medium text-ink">Catat trade</h2>
         <p class="mt-1 text-sm text-ink-muted">

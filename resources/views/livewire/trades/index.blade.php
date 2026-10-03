@@ -26,7 +26,9 @@ new class extends Component
 };
 ?>
 
-<div class="p-4 sm:p-8 bg-surface shadow-soft sm:rounded-xl spotlight transition-shadow hover:shadow-lift">
+{{-- Blok, bukan panel: di halaman ini yang pokok adalah form pencatatan di
+     atasnya. Daftar ini bacaan pendukung. --}}
+<div class="blok p-4 sm:p-8">
     <header>
         <h2 class="text-lg font-medium text-ink">Trade terakhir</h2>
         <p class="mt-1 text-sm text-ink-muted">

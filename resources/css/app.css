@@ -258,6 +258,131 @@
 */
 
 @layer components {
+    /*
+    |----------------------------------------------------------------------
+    | Tiga tingkat permukaan
+    |----------------------------------------------------------------------
+    |
+    | Sebelumnya setiap wadah memakai pola yang persis sama, sehingga ringkasan,
+    | form, dan arsip terlihat sama pentingnya. Tiga tingkat di bawah adalah
+    | satu-satunya pilihan yang boleh dipakai, dan bedanya sengaja dibuat
+    | terbaca sebagai ketinggian:
+    |
+    |   panel   - melayang. Isi pokok halaman. Satu, paling banyak dua per layar.
+    |   blok    - menapak. Kelompok pendukung.
+    |   (polos) - rata. Tanpa kelas sama sekali, cuma `border-t border-line`
+    |             dan jarak. Untuk arsip, catatan kaki, dan zona berbahaya.
+    |
+    | Kalau sebuah halaman butuh dua panel bersebelahan, hampir selalu salah
+    | satunya sebenarnya blok.
+    |
+    */
+    .panel {
+        background: rgb(var(--surface) / 0.72);
+        backdrop-filter: blur(16px) saturate(170%);
+        -webkit-backdrop-filter: blur(16px) saturate(170%);
+        border: 1px solid rgb(var(--line) / 0.9);
+        border-radius: 1rem;
+        box-shadow:
+            inset 0 1px 0 rgb(255 255 255 / 0.14),
+            0 8px 32px rgb(var(--shadow) / 0.14);
+    }
+
+    /*
+    | Di mode gelap, bayangan tidak bisa dipakai menandai ketinggian: hitam di
+    | atas hitam tidak terbaca. Panel dinaikkan dengan cahaya - satu lapis putih
+    | tipis di atas permukaan - supaya ia tetap lebih terang dari blok. Tanpa ini
+    | panel justru tampak lebih dalam daripada blok, kebalikan dari maksudnya.
+    */
+    @media (prefers-color-scheme: dark) {
+        .panel {
+            background:
+                linear-gradient(rgb(255 255 255 / 0.055), rgb(255 255 255 / 0.055)),
+                rgb(var(--surface) / 0.66);
+            box-shadow:
+                inset 0 1px 0 rgb(255 255 255 / 0.08),
+                0 8px 32px rgb(0 0 0 / 0.45);
+        }
+    }
+
+    @media (prefers-reduced-transparency: reduce) {
+        .panel {
+            background: rgb(var(--surface));
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+        }
+    }
+
+    @supports not (backdrop-filter: blur(1px)) {
+        .panel {
+            background: rgb(var(--surface));
+        }
+    }
+
+    /* Lapisan cahaya tetap dipertahankan di jalur mundur, kalau tidak panel dan
+       blok jadi warna yang persis sama di mode gelap. */
+    @media (prefers-reduced-transparency: reduce) and (prefers-color-scheme: dark) {
+        .panel {
+            background:
+                linear-gradient(rgb(255 255 255 / 0.055), rgb(255 255 255 / 0.055)),
+                rgb(var(--surface));
+        }
+    }
+
+    @supports not (backdrop-filter: blur(1px)) {
+        @media (prefers-color-scheme: dark) {
+            .panel {
+                background:
+                    linear-gradient(rgb(255 255 255 / 0.055), rgb(255 255 255 / 0.055)),
+                    rgb(var(--surface));
+            }
+        }
+    }
+
+    /* Menapak: permukaan padat, garis tepi, tanpa bayangan. Bedanya dari panel
+       ada pada bayangan dan radius, bukan pada warna - dua permukaan dengan
+       warna berbeda akan terbaca sebagai dua status, bukan dua tingkat. */
+    .blok {
+        background: rgb(var(--surface));
+        border: 1px solid rgb(var(--line));
+        border-radius: 0.75rem;
+    }
+
+    /*
+    | Sel di dalam panel angka: dipisah garis rambut, bukan jarak. Empat kartu
+    | terpisah membuat empat angka terbaca sebagai empat hal, padahal itu satu
+    | ringkasan.
+    |
+    | Garisnya mengikuti jumlah kolom grid: satu kolom di ponsel, dua di sm,
+    | empat di lg. Tanpa penyesuaian ini akan ada garis menggantung di ujung
+    | baris.
+    */
+    .panel-sel + .panel-sel {
+        border-top: 1px solid rgb(var(--line));
+    }
+
+    @media (min-width: 640px) {
+        .panel-sel:nth-child(odd) + .panel-sel {
+            border-top: 0;
+            border-left: 1px solid rgb(var(--line));
+        }
+
+        .panel-sel:nth-child(n + 3) {
+            border-top: 1px solid rgb(var(--line));
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .panel-sel + .panel-sel {
+            border-top: 0;
+            border-left: 1px solid rgb(var(--line));
+        }
+
+        .panel-sel:nth-child(n + 3) {
+            border-top: 0;
+        }
+    }
+
     /* Butiran halus di atas seluruh halaman. */
     .grain {
         position: fixed;

@@ -240,7 +240,7 @@ new class extends Component
 
 <div class="space-y-6">
     {{-- Buat setup baru --}}
-    <div class="p-4 sm:p-8 bg-surface shadow-soft sm:rounded-xl spotlight transition-shadow hover:shadow-lift">
+    <div class="blok p-4 sm:p-8">
         <div class="max-w-xl">
             <header>
                 <h2 class="text-lg font-medium text-ink">Setup baru</h2>
@@ -275,7 +275,7 @@ new class extends Component
     </div>
 
     {{-- Daftar setup aktif --}}
-    <div class="p-4 sm:p-8 bg-surface shadow-soft sm:rounded-xl spotlight transition-shadow hover:shadow-lift">
+    <div class="blok p-4 sm:p-8">
         <header>
             <h2 class="text-lg font-medium text-ink">Setup aktif</h2>
             <p class="mt-1 text-sm text-ink-muted">Pilih satu setup untuk mengelola rules-nya.</p>
@@ -307,7 +307,9 @@ new class extends Component
 
     {{-- Rules untuk setup terpilih --}}
     @if ($this->selectedSetup)
-        <div class="p-4 sm:p-8 bg-surface shadow-soft sm:rounded-xl spotlight transition-shadow hover:shadow-lift pop" wire:key="panel-{{ $selectedSetupId }}">
+        {{-- Panel: di halaman ini, menyusun rules adalah pekerjaannya. Dua
+             blok di atas cuma jalan menuju ke sini. --}}
+        <div class="panel spotlight pop p-4 sm:p-8" wire:key="panel-{{ $selectedSetupId }}">
             <header>
                 <h2 class="text-lg font-medium text-ink">Rules: {{ $this->selectedSetup->name }}</h2>
                 <p class="mt-1 text-sm text-ink-muted">
@@ -374,9 +376,10 @@ new class extends Component
 
     {{-- Arsip --}}
     @if ($this->archivedSetups->isNotEmpty())
-        <div class="p-4 sm:p-8 bg-surface shadow-soft sm:rounded-xl spotlight transition-shadow hover:shadow-lift">
+        {{-- Tingkat ketiga: tanpa permukaan. --}}
+        <div class="border-t border-line px-4 pt-8 sm:px-8">
             <header>
-                <h2 class="text-lg font-medium text-ink">Arsip</h2>
+                <h2 class="text-lg font-medium text-ink-muted">Arsip</h2>
                 <p class="mt-1 text-sm text-ink-muted">
                     Setup yang diarsipkan tidak muncul saat mencatat trade, tapi trade lama yang memakainya tetap utuh.
                 </p>
