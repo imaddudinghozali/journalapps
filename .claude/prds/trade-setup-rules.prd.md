@@ -78,21 +78,21 @@ Catatan: metrik "compliance score naik" **sengaja tidak dijadikan metrik utama**
 |---|---|---|---|---|
 | 1 | Akun dan isolasi data | Pengguna dapat mendaftar, masuk, dan yakin bahwa data jurnalnya tidak terlihat oleh pengguna lain | complete | `.claude/plans/trade-setup-rules.plan.md` |
 | 2 | Katalog setup dan rules | Pengguna dapat menuliskan strategi tak tertulisnya menjadi daftar setup dan rules berbobot yang bisa diarsipkan | complete | `.claude/plans/trade-setup-rules-milestone-2.plan.md` |
-| 3 | Pencatatan trade dengan checklist | Setiap trade baru tersimpan bersama bukti kriteria apa yang terpenuhi, dan pengguna langsung melihat skor kepatuhannya | pending | — |
-| 4 | Peringatan kepatuhan rendah | Pengguna mendapat peringatan sebelum menyimpan trade berkepatuhan rendah, tanpa pernah kehilangan kemampuan mencatatnya | pending | — |
+| 3 | Pencatatan trade dengan checklist | Setiap trade baru tersimpan bersama bukti kriteria apa yang terpenuhi, dan pengguna langsung melihat skor kepatuhannya | complete | `.claude/plans/trade-setup-rules-milestone-3.plan.md` |
+| 4 | Peringatan kepatuhan rendah | Pengguna mendapat peringatan sebelum menyimpan trade berkepatuhan rendah, tanpa pernah kehilangan kemampuan mencatatnya | complete | `.claude/plans/trade-setup-rules-milestone-3.plan.md` (digabung) |
 | 5 | Laporan kepatuhan vs P&L | Pengguna dapat menjawab setup mana yang menghasilkan dan rule mana yang paling mahal dilanggar, dari satu halaman | pending | — |
 | 6 | Baseline dari jurnal lama | Catatan trade historis masuk ke sistem sehingga target metrik punya pembanding nyata, bukan angka tebakan | pending | — |
 
 ## Open Questions
 
 - [ ] Berapa baseline sebenarnya dari jurnal lama — persentase trade tanpa aturan, dan selisih P&L antara trade patuh vs tidak patuh? Semua target metrik bergantung pada angka ini.
-- [ ] Apakah pemilik produk tetap menginginkan blocking keras meski berisiko membuat trade impulsif tidak tercatat? Jika ya, perlu mekanisme alternatif (mis. tetap mencatat tapi menandai sebagai pelanggaran) agar data tidak hilang.
-- [ ] Bagaimana rules yang berubah seiring waktu diperlakukan dalam laporan — apakah trade lama dibandingkan memakai versi rule saat itu (perlu versioning) atau cukup mengandalkan arsip tanpa riwayat versi?
-- [ ] Apakah satu trade boleh memiliki lebih dari satu setup (mis. konfluensi dua konsep), atau wajib tepat satu? Ini mengubah bentuk data dan cara laporan diagregasi.
+- [x] **Terjawab (milestone 3/4):** peringatan saja, tidak pernah memblokir. Ambangnya diatur pengguna sendiri lewat halaman profil.
+- [x] **Terjawab (milestone 3):** snapshot. `trade_rule_checks` menyalin label, bobot, dan status wajib saat trade dicatat, jadi trade lama memakai aturan yang berlaku saat itu tanpa perlu tabel versi.
+- [x] **Terjawab (milestone 3):** tepat satu. Banyak setup membuat skor ambigu dan agregasi laporan jauh lebih rumit; konfluensi ditangani dengan membuat setup gabungan tersendiri.
 - [ ] Berapa minimum jumlah trade sebelum laporan korelasi layak ditampilkan? Menampilkan win rate 100% dari 2 trade akan menyesatkan dan merusak kepercayaan pada laporan.
-- [ ] Apakah rule boleh berjawaban bertingkat (terpenuhi / sebagian / tidak) atau cukup biner? Jawaban bertingkat lebih jujur tetapi memperlambat pencatatan — bertabrakan dengan metrik guardrail.
+- [x] **Terjawab (milestone 3):** biner, demi metrik guardrail kecepatan pencatatan. Bisa ditingkatkan nanti tanpa membuang data.
 - [ ] Bagaimana menangani trade multi-posisi (scale-in / partial close) — apakah checklist menempel pada posisi atau pada trade gabungan?
-- [ ] Mata uang, instrumen, dan satuan hasil (pip / R-multiple / nominal) apa saja yang harus didukung agar expectancy bisa dihitung konsisten?
+- [x] **Terjawab sebagian (milestone 3):** `risk_amount` dan `pnl_amount` disimpan, R-multiple dihitung darinya. Satu mata uang per akun; dukungan multi-mata-uang masih terbuka.
 
 ## Risks
 

@@ -51,11 +51,13 @@ Trait juga menolak **perpindahan kepemilikan**: mengubah `user_id` pada record y
 
 **Arsip, bukan hapus.** Keduanya memakai `archived_at` (nullable timestamp), bukan soft delete bawaan Laravel — semantiknya berbeda: ini "tidak dipakai lagi", bukan "terhapus". Record yang diarsipkan hilang dari form pencatatan trade tapi tetap bisa dirujuk laporan historis. Scope `active()` dan `archived()`, penanda `isArchived()`.
 
-**Versioning rule belum ada, dan ini utang yang disadari.** Kalau pengguna mengedit bobot atau label rule setelah ada trade yang memakainya, laporan historis jadi tidak setara. Saat milestone 3 menambahkan relasi trade, tegakkan aturan "arsipkan lalu buat baru" alih-alih mengedit rule yang sudah terpakai.
+**Versioning rule diselesaikan lewat snapshot, bukan tabel versi.** `trade_rule_checks` menyimpan salinan `rule_label`, `rule_weight`, dan `rule_required` saat trade dicatat. Mengedit rule hari ini tidak pernah mengubah trade kemarin. Utang yang dicatat di milestone 2 sudah lunas; `tests/Feature/Trades/RuleSnapshotTest.php` adalah buktinya.
+
+Konsekuensi yang harus diingat: **laporan "rule mana yang paling sering dilanggar" wajib mengelompokkan lewat `setup_rule_id`, bukan `rule_label`** — label bisa berubah antar trade. Dan jangan pernah membaca bobot dari relasi `rule()` untuk skor historis; pakai kolom snapshot.
 
 **Integritas komposit.** `setup_rules` punya FK `(trading_setup_id, user_id)` → `trading_setups(id, user_id)`, jadi database sendiri menolak rule yang pemiliknya berbeda dari pemilik setup-nya. Tabel domain baru yang menyimpan FK ke tabel domain lain **wajib** memakai pola yang sama: tambahkan `unique(['id','user_id'])` di tabel induk, lalu FK komposit dari tabel anak.
 
-**Peringatan cascade untuk milestone 3.** FK dari tabel `trades` ke `trading_setups` **jangan** `cascadeOnDelete`. Pakai `restrictOnDelete` atau `nullOnDelete` — kalau tidak, menghapus satu setup akan memusnahkan riwayat trade, persis hal yang dicegah oleh keputusan arsip-bukan-hapus.
+**Cascade: sudah ditegakkan.** FK `trades.trading_setup_id` memakai `restrictOnDelete` — menghapus setup yang sudah dipakai trade akan ditolak database, dan itu disengaja. Jalur yang benar adalah mengarsipkan setup. `trade_rule_checks.setup_rule_id` adalah pengecualian dari aturan FK komposit: nullable kolom tunggal dengan `nullOnDelete`, karena komposit-cascade akan memusnahkan riwayat checklist dan komposit-restrict akan memblokir penghapusan akun. Snapshot sudah membawa datanya.
 
 **Keunikan nama dicek lewat model, bukan `Rule::unique`.** `Rule::unique` menembak query builder mentah sehingga melihat data pengguna lain — nama setup orang lain akan bocor sebagai pesan "sudah dipakai". Lihat `uniqueNameRule()` di `resources/views/livewire/setups/manage.blade.php`.
 
@@ -74,6 +76,21 @@ Model::withoutGlobalScope(OwnedByUserScope::class)->get();
 Dan saat membuat record di luar konteks request, isi `user_id` secara eksplisit — kalau tidak, hook `creating` juga melempar exception.
 
 Belum ada model domain yang memakai trait ini (milestone 1 hanya membangun mekanismenya). Risiko "seeder pecah" baru nyata di milestone 2 — saat membuat seeder pertama, uji jalurnya.
+
+## Model domain trade
+
+| Model | Tabel | Catatan |
+|---|---|---|
+| `Trade` | `trades` | Satu trade = tepat satu setup. `compliance_score` nullable: null berarti belum bisa dinilai (setup tanpa rule), bukan 0 |
+| `TradeRuleCheck` | `trade_rule_checks` | Jawaban checklist + snapshot rule |
+
+**Hasil disimpan sebagai `risk_amount` dan `pnl_amount`,** R-multiple dihitung (`Trade::rMultiple()`). Nominal saja membuat expectancy lintas instrumen tidak sebanding; R saja menghilangkan konteks uang.
+
+**`App\Support\ComplianceScore` adalah satu-satunya tempat skor dihitung.** Rumusnya `round(100 * bobot terpenuhi / total bobot)`; tanpa rule hasilnya `null`. Pelanggaran rule wajib dilaporkan terpisah dari skor, karena bobotnya bisa kecil sehingga skor tetap tinggi padahal syarat mutlak dilanggar. Mengubah rumus ini merusak perbandingan dengan data historis.
+
+**Jangan pernah memblokir penyimpanan trade karena kepatuhan rendah.** Hanya peringatan. Jurnal yang menolak mencatat trade buruk akan menghapus justru data yang paling perlu dipelajari. Ambangnya milik pengguna (`users.compliance_threshold`), bukan angka tetap aplikasi.
+
+**Jangan memberi badge, streak, atau perayaan atas skor tinggi.** Skor diisi sendiri oleh pengguna; memberinya penghargaan mendorong pencentangan tidak jujur dan merusak satu-satunya aset produk ini.
 
 ## Pengujian
 
@@ -96,7 +113,7 @@ Model fixture `tests/Fixtures/OwnedThing.php` hanya untuk menguji mekanisme kepe
 php artisan test --coverage --min=80
 ```
 
-Angka saat ini 84,8% dari 76 test. Margin di atas ambang kecil, jadi kode baru tanpa test akan cepat menjatuhkannya — tulis test bersamaan dengan kodenya, jangan menunda.
+Angka saat ini 91,2% dari 136 test. Margin di atas ambang kecil, jadi kode baru tanpa test akan cepat menjatuhkannya — tulis test bersamaan dengan kodenya, jangan menunda.
 
 Celah coverage yang diketahui dan disengaja: cabang exception pada hook `updating` di `BelongsToUser` (82,8%) dan `View/Components\GuestLayout` (0%, kelas layout bawaan Breeze tanpa logika).
 
