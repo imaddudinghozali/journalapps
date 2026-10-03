@@ -11,11 +11,11 @@
 |---|---|---|
 | 1 Fondasi token dan komponen wadah | selesai | `c637e69` |
 | 2 Hierarki tiga tingkat | selesai | `8439805` - 27 kartu identik jadi 0; satu panel per halaman |
-| 3 Posisi terbuka di dashboard | belum | satu-satunya task yang menambah perilaku |
-| 4 Form catat trade dikelompokkan ulang | belum | |
-| 5 Ikon dan navigasi | belum | Phosphor belum dipasang |
-| 6 Aksesibilitas dan jalan buntu | sebagian | skip-link, `<main>`, judul dan meta sudah ada di welcome; halaman 404 dan judul per rute belum |
-| 7 Skeleton saat memuat | belum | |
+| 3 Posisi terbuka di dashboard | selesai | `5da4da4` - 6 test ditulis dulu, 3 gagal sebelum implementasi |
+| 4 Form catat trade dikelompokkan ulang | selesai | `247184e` - fieldset penilaian dan eksekusi |
+| 5 Ikon dan navigasi | selesai | `790ac82` - Phosphor via Blade, bundle JS tidak bertambah |
+| 6 Aksesibilitas dan jalan buntu | selesai | `51a8706` - judul per rute, meta, robots, halaman 404 |
+| 7 Skeleton saat memuat | selesai | `bf17c81` - kalender dan checklist; laporan sengaja tidak, lihat catatan |
 | 8 Lapisan visual | selesai | `c637e69` - grain, ambient, glass, spotlight, bayangan bertint |
 | 9 Font Geist dan tipografi kinetik | selesai | `c637e69` + `ec2040b` - animasi bobot variable font di judul welcome |
 | 10 Gambar latar dan gerak scroll | selesai | `ec2040b` + `219692c` |
@@ -25,6 +25,19 @@ sendiri (`public/images/dashboard-dark.jpg`), bukan foto stok - itu satu-satunya
 gambar yang benar-benar menjelaskan produknya. Scroll hijack diwujudkan sebagai
 scroll berinersia (Lenis) di bundle terpisah, ditambah tumpukan kartu
 `position: sticky`; `/trades` tidak memuat bundle itu sama sekali.
+
+Catatan Task 7: rencana menyebut skeleton di laporan juga. Tidak dikerjakan,
+dan alasannya terukur: halaman welcome yang nyaris tanpa query butuh 2,0-2,5
+detik, sama persis dengan dashboard dan laporan. Waktunya habis di boot PHP
+per-request pada `artisan serve`, bukan di query. Satu-satunya cara memasang
+skeleton di laporan adalah lazy load, dan itu berarti dua boot, bukan satu.
+
+## Blocker Rilis - status
+
+Empat dari tujuh ditutup di `c0102b8`: pembatasan laju pendaftaran, kebijakan
+privasi, pengerasan cookie sesi, dan `.env.production.example`. Tiga sisanya
+(APP_DEBUG/APP_ENV, pengguna basis data, SMTP) butuh server tujuan dan
+kredensial yang belum ada; langkah lengkapnya di `DEPLOY.md`.
 
 ## Ringkasan
 
