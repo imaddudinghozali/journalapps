@@ -145,6 +145,20 @@ new class extends Component
         $this->resetValidation();
     }
 
+    /**
+     * Dibandingkan sebagai angka, bukan string: aturan different melihat
+     * '2000' dan '2000.00000000' sebagai nilai berbeda, padahal jaraknya nol.
+     */
+    protected function stopBerbedaDariEntry(): callable
+    {
+        return function (string $atribut, mixed $nilai, callable $gagal): void {
+            if (is_numeric($nilai) && is_numeric($this->entryPrice)
+                && (float) $nilai === (float) $this->entryPrice) {
+                $gagal('Stop tidak boleh sama dengan harga entry: jaraknya nol, risikonya jadi tidak terdefinisi.');
+            }
+        };
+    }
+
     public function save(): void
     {
         $setup = $this->selectedSetup();
@@ -155,7 +169,7 @@ new class extends Component
             'direction' => ['required', 'in:'.implode(',', Trade::directions())],
             'lotSize' => ['required', 'numeric', 'min:0.0001', 'max:100000'],
             'entryPrice' => ['required', 'numeric', 'gt:0', 'max:9999999999'],
-            'stopPrice' => ['required', 'numeric', 'gt:0', 'max:9999999999', 'different:entryPrice'],
+            'stopPrice' => ['required', 'numeric', 'gt:0', 'max:9999999999', $this->stopBerbedaDariEntry()],
             'exitPrice' => ['nullable', 'numeric', 'gt:0', 'max:9999999999', 'required_with:closedAt'],
             'openedAt' => ['required', 'date'],
             // Trade tertutup berarti waktu tutup DAN hasil sama-sama ada.
@@ -173,7 +187,6 @@ new class extends Component
             'lotSize.min' => 'Lot minimal 0,0001.',
             'entryPrice.required' => 'Isi harga entry.',
             'stopPrice.required' => 'Isi harga stop loss. Dari jarak inilah risiko dihitung.',
-            'stopPrice.different' => 'Stop tidak boleh sama dengan harga entry: jaraknya nol, risikonya jadi tidak terdefinisi.',
             'closedAt.after_or_equal' => 'Waktu tutup tidak boleh mendahului waktu buka.',
             'closedAt.required_with' => 'Isi juga waktu tutupnya kalau trade sudah ada harga exit.',
             'exitPrice.required_with' => 'Isi juga harga exit kalau trade sudah ditutup.',

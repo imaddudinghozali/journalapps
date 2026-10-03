@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Livewire\Volt\Volt;
 
 Route::view('/', 'welcome');
 
@@ -15,6 +16,12 @@ Route::view('trades', 'trades')
 Route::view('reports', 'reports')
     ->middleware(['auth', 'verified'])
     ->name('reports');
+
+// Route model binding terscope: trade milik pengguna lain berakhir 404
+// sebelum komponennya sempat dimuat.
+Volt::route('trades/{trade}/edit', 'trades.edit')
+    ->middleware(['auth', 'verified'])
+    ->name('trades.edit');
 
 Route::view('setups', 'setups')
     ->middleware(['auth', 'verified'])
