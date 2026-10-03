@@ -354,8 +354,27 @@ new class extends Component
             @endif
         </div>
 
+        {{-- Rangka checklist saat setup berganti. Bentuknya mengikuti bentuk
+             akhirnya: judul, beberapa baris centang, lalu baris skor. --}}
+        <div class="w-full" wire:loading wire:target="tradingSetupId" aria-hidden="true">
+            <div class="border border-line rounded-md p-4">
+                <div class="h-5 w-20 rangka"></div>
+                <ul class="mt-4 space-y-3">
+                    @for ($i = 0; $i < 4; $i++)
+                        <li class="flex items-start gap-3">
+                            <div class="mt-0.5 h-4 w-4 shrink-0 rangka"></div>
+                            <div class="h-4 rangka" style="width: {{ [62, 48, 70, 55][$i] }}%"></div>
+                        </li>
+                    @endfor
+                </ul>
+                <div class="mt-5 h-4 w-40 rangka"></div>
+            </div>
+        </div>
+
         @if ($this->selectedSetup)
-            <div class="border border-line rounded-md p-4 pop" wire:key="checklist-{{ $tradingSetupId }}">
+            <div class="border border-line rounded-md p-4 pop"
+                 wire:loading.remove wire:target="tradingSetupId"
+                 wire:key="checklist-{{ $tradingSetupId }}">
                 <h3 class="font-medium text-ink">Checklist</h3>
 
                 @if ($this->rules->isEmpty())

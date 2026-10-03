@@ -382,6 +382,31 @@
         }
     }
 
+    /*
+    | Rangka pemuat. Bentuknya mengikuti bentuk akhir isinya, bukan lingkaran
+    | berputar: spinner memberi tahu "sedang sibuk", rangka memberi tahu "yang
+    | akan muncul di sini kira-kira begini", dan yang kedua membuat perpindahan
+    | terasa lebih pendek walau durasinya sama.
+    |
+    | Denyutnya memakai opacity, bukan gradien yang bergeser - satu properti
+    | yang bisa dikomposisi GPU, dan tetap terbaca saat animasinya dimatikan.
+    */
+    .rangka {
+        background: rgb(var(--line));
+        border-radius: 0.375rem;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+        .rangka {
+            animation: denyut 1.4s ease-in-out infinite;
+        }
+
+        @keyframes denyut {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.45; }
+        }
+    }
+
     /* Butiran halus di atas seluruh halaman. */
     .grain {
         position: fixed;

@@ -274,7 +274,32 @@ new class extends Component
             </div>
         </div>
 
-        <div class="mt-4 grid grid-cols-7 gap-px bg-line rounded-md overflow-hidden border border-line">
+        {{-- Rangka pemuat saat pindah bulan. Tanpa ini kalender bulan lama
+             tetap terpampang sampai yang baru datang, dan selama sepersekian
+             detik itu angkanya terbaca seolah milik bulan yang baru. --}}
+        {{-- Pembungkus yang menyandang wire:loading, bukan grid-nya sendiri:
+             wire:loading menimpa display, dan grid yang dipaksa jadi
+             inline-block akan runtuh jadi satu kolom. --}}
+        <div class="w-full" wire:loading wire:target="previousMonth,nextMonth" aria-hidden="true">
+            <div class="mt-4 grid grid-cols-7 gap-px bg-line rounded-md overflow-hidden border border-line">
+                @foreach (['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'] as $hari)
+                    <div class="bg-surface-sunken px-2 py-2 text-xs font-medium text-ink-muted text-center">{{ $hari }}</div>
+                @endforeach
+
+                @for ($i = 0; $i < 42; $i++)
+                    <div class="min-h-[84px] bg-surface p-2">
+                        <div class="ms-auto h-3 w-4 rangka"></div>
+                        @if ($i % 5 === 2)
+                            <div class="mt-2 h-4 w-14 rangka"></div>
+                            <div class="mt-1 h-2.5 w-10 rangka"></div>
+                        @endif
+                    </div>
+                @endfor
+            </div>
+        </div>
+
+        <div class="mt-4 grid grid-cols-7 gap-px bg-line rounded-md overflow-hidden border border-line"
+             wire:loading.remove wire:target="previousMonth,nextMonth">
             @foreach (['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'] as $hari)
                 <div class="bg-surface-sunken px-2 py-2 text-xs font-medium text-ink-muted text-center">{{ $hari }}</div>
             @endforeach
