@@ -25,6 +25,23 @@ new class extends Component
         return DashboardSummary::from(Trade::with('setup')->get());
     }
 
+    /**
+     * Posisi yang belum ditutup, paling lama menggantung lebih dulu.
+     *
+     * Penutupannya tetap di halaman ubah trade. Perhitungan P&L berjalan di
+     * dalam transaksi dengan baris instrumen dikunci; menyalinnya ke sini
+     * berarti logika uang hidup di dua tempat.
+     */
+    #[Computed]
+    public function openTrades()
+    {
+        return Trade::with('setup')
+            ->stillOpen()
+            ->orderBy('opened_at')
+            ->orderBy('id')
+            ->get();
+    }
+
     public function previousMonth(): void
     {
         $c = Carbon::create($this->year, $this->month, 1)->subMonth();
@@ -100,6 +117,41 @@ new class extends Component
 @endphp
 
 <div class="space-y-6">
+    {{-- Posisi terbuka duluan. Angka ringkasan melaporkan masa lalu; ini
+         sekarang, dan satu-satunya hal di halaman ini yang menuntut tindakan.
+         Karena itu ia yang jadi panel, dan ringkasan di bawahnya turun jadi
+         blok - dua panel bersebelahan berarti tidak ada yang diutamakan. --}}
+    @if ($this->openTrades->isNotEmpty())
+        <section class="panel spotlight border-l-2 border-l-accent p-4 sm:p-6" aria-labelledby="judul-terbuka">
+            <header class="flex flex-wrap items-baseline justify-between gap-2">
+                <h2 id="judul-terbuka" class="text-lg font-medium text-ink">Posisi terbuka</h2>
+                <span class="text-sm text-ink-faint tabular">{{ $this->openTrades->count() }} posisi</span>
+            </header>
+
+            <ul class="mt-4 divide-y divide-line">
+                @foreach ($this->openTrades as $terbuka)
+                    <li class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 py-3"
+                        wire:key="terbuka-{{ $terbuka->id }}">
+                        <div class="min-w-0">
+                            <span class="font-medium text-ink">{{ $terbuka->symbol }}</span>
+                            <span class="text-ink-muted">{{ $terbuka->direction }}</span>
+                            <span class="block text-sm text-ink-faint">
+                                {{ $terbuka->setup->name }} &middot;
+                                dibuka {{ $terbuka->opened_at->format('d/m/Y H:i') }}
+                                ({{ $terbuka->opened_at->diffForHumans(syntax: \Carbon\CarbonInterface::DIFF_ABSOLUTE) }})
+                            </span>
+                        </div>
+
+                        <a href="{{ route('trades.edit', $terbuka) }}" wire:navigate
+                           class="press shrink-0 rounded-md border border-line-strong px-3 py-1.5 text-sm text-ink hover:bg-surface-sunken">
+                            Tutup
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
+        </section>
+    @endif
+
     @if ($s->isEmpty())
         <div class="blok p-8">
             <h2 class="text-lg font-medium text-ink">Belum ada yang bisa diringkas</h2>
@@ -112,8 +164,8 @@ new class extends Component
     @else
         {{-- Angka pokok: satu panel, bukan empat kartu. Keempatnya adalah satu
              ringkasan yang sama, jadi dipisah garis rambut, bukan jarak. --}}
-        <div class="panel spotlight overflow-hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-            <div class="panel-sel p-5">
+        <div class="blok overflow-hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="sel-angka p-5">
                 <div class="text-sm text-ink-muted">P&amp;L bersih</div>
                 <div class="mt-2 text-3xl font-semibold tabular {{ $nadaAngka($s->netPnl) }}">
                     {{ $uang($s->netPnl) }}
@@ -121,7 +173,7 @@ new class extends Component
                 <div class="mt-1 text-xs text-ink-faint">dari {{ $s->closedCount }} trade tertutup</div>
             </div>
 
-            <div class="panel-sel p-5">
+            <div class="sel-angka p-5">
                 <div class="text-sm text-ink-muted">Rata-rata per trade</div>
                 <div class="mt-2 text-3xl font-semibold tabular {{ $nadaAngka($s->avgTrade) }}">
                     {{ $uang($s->avgTrade) ?? 'belum ada' }}
@@ -129,7 +181,7 @@ new class extends Component
                 <div class="mt-1 text-xs text-ink-faint">{{ $s->openCount }} masih terbuka</div>
             </div>
 
-            <div class="panel-sel p-5">
+            <div class="sel-angka p-5">
                 <div class="text-sm text-ink-muted">Rata-rata trade menang</div>
                 <div class="mt-2 text-3xl font-semibold tabular {{ $s->avgWin === null ? 'text-ink-faint' : 'text-viz-positive' }}">
                     {{ $uang($s->avgWin) ?? 'belum ada' }}
@@ -139,7 +191,7 @@ new class extends Component
                 </div>
             </div>
 
-            <div class="panel-sel p-5">
+            <div class="sel-angka p-5">
                 <div class="text-sm text-ink-muted">Rata-rata trade kalah</div>
                 <div class="mt-2 text-3xl font-semibold tabular {{ $s->avgLoss === null ? 'text-ink-faint' : 'text-viz-negative' }}">
                     {{ $uang($s->avgLoss) ?? 'belum ada' }}

@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -28,5 +29,10 @@ class AppServiceProvider extends ServiceProvider
         // test justru tidak menangkap kelas bug yang strict mode ada untuk
         // menangkapnya.
         Model::shouldBeStrict(! $this->app->isProduction());
+
+        // Teks antarmuka produk berbahasa Indonesia, jadi "6 hours ago" tidak
+        // boleh bocor lewat Carbon. Ini hanya mempengaruhi humanisasi tanggal;
+        // format eksplisit seperti d/m/Y tidak terlokalisasi dan tidak berubah.
+        Carbon::setLocale('id');
     }
 }

@@ -349,36 +349,35 @@
     }
 
     /*
-    | Sel di dalam panel angka: dipisah garis rambut, bukan jarak. Empat kartu
-    | terpisah membuat empat angka terbaca sebagai empat hal, padahal itu satu
-    | ringkasan.
+    | Sel angka: dipisah garis rambut, bukan jarak. Empat kartu terpisah membuat
+    | empat angka terbaca sebagai empat hal, padahal itu satu ringkasan.
     |
     | Garisnya mengikuti jumlah kolom grid: satu kolom di ponsel, dua di sm,
     | empat di lg. Tanpa penyesuaian ini akan ada garis menggantung di ujung
     | baris.
     */
-    .panel-sel + .panel-sel {
+    .sel-angka + .sel-angka {
         border-top: 1px solid rgb(var(--line));
     }
 
     @media (min-width: 640px) {
-        .panel-sel:nth-child(odd) + .panel-sel {
+        .sel-angka:nth-child(odd) + .sel-angka {
             border-top: 0;
             border-left: 1px solid rgb(var(--line));
         }
 
-        .panel-sel:nth-child(n + 3) {
+        .sel-angka:nth-child(n + 3) {
             border-top: 1px solid rgb(var(--line));
         }
     }
 
     @media (min-width: 1024px) {
-        .panel-sel + .panel-sel {
+        .sel-angka + .sel-angka {
             border-top: 0;
             border-left: 1px solid rgb(var(--line));
         }
 
-        .panel-sel:nth-child(n + 3) {
+        .sel-angka:nth-child(n + 3) {
             border-top: 0;
         }
     }
