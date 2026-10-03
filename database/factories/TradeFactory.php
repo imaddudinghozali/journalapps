@@ -15,6 +15,22 @@ class TradeFactory extends Factory
 {
     protected $model = Trade::class;
 
+    /**
+     * Factory menembus $fillable dengan sengaja.
+     *
+     * risk_amount dan pnl_amount tidak fillable di produksi karena keduanya
+     * diturunkan dari harga, bukan diketik. Test tetap perlu menyusun trade
+     * dengan hasil tertentu tanpa harus mengarang harga yang kebetulan
+     * menghasilkan angka itu.
+     */
+    public function newModel(array $attributes = [])
+    {
+        $model = parent::newModel();
+        $model->forceFill($attributes);
+
+        return $model;
+    }
+
     public function definition(): array
     {
         return [

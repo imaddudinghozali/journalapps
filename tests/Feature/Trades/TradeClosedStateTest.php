@@ -6,6 +6,8 @@ use App\Models\TradingSetup;
 use App\Models\User;
 use Livewire\Volt\Volt;
 
+
+
 /*
 |--------------------------------------------------------------------------
 | Definisi trade tertutup
@@ -26,37 +28,37 @@ function setupSiap(User $user): TradingSetup
     return $setup;
 }
 
-function isiFormDasar($komponen, TradingSetup $setup)
+function isiFormDasar($komponen, TradingSetup $setup, App\Models\Instrument $ins)
 {
     return $komponen
         ->set('tradingSetupId', $setup->id)
-        ->set('symbol', 'XAUUSD')
-        ->set('riskAmount', '100')
+        ->set('instrumentId', $ins->id)
+        ->set('lotSize', '0.1')->set('entryPrice', '2000')->set('stopPrice', '1990')
         ->set('openedAt', now()->subHour()->format('Y-m-d\TH:i'));
 }
 
-it('menolak hasil tanpa waktu tutup', function () {
+it('menolak harga exit tanpa waktu tutup', function () {
     $alice = User::factory()->create();
     $this->actingAs($alice);
     $setup = setupSiap($alice);
 
-    isiFormDasar(Volt::test('trades.record'), $setup)
-        ->set('pnlAmount', '150')
+    isiFormDasar(Volt::test('trades.record'), $setup, instrumenUji($alice))
+        ->set('exitPrice', '2015')
         ->call('save')
         ->assertHasErrors('closedAt');
 
     expect(Trade::count())->toBe(0);
 });
 
-it('menolak waktu tutup tanpa hasil', function () {
+it('menolak waktu tutup tanpa harga exit', function () {
     $alice = User::factory()->create();
     $this->actingAs($alice);
     $setup = setupSiap($alice);
 
-    isiFormDasar(Volt::test('trades.record'), $setup)
+    isiFormDasar(Volt::test('trades.record'), $setup, instrumenUji($alice))
         ->set('closedAt', now()->format('Y-m-d\TH:i'))
         ->call('save')
-        ->assertHasErrors('pnlAmount');
+        ->assertHasErrors('exitPrice');
 
     expect(Trade::count())->toBe(0);
 });
@@ -66,7 +68,7 @@ it('menerima trade yang keduanya kosong sebagai trade terbuka', function () {
     $this->actingAs($alice);
     $setup = setupSiap($alice);
 
-    isiFormDasar(Volt::test('trades.record'), $setup)
+    isiFormDasar(Volt::test('trades.record'), $setup, instrumenUji($alice))
         ->call('save')
         ->assertHasNoErrors();
 

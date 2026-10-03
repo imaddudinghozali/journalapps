@@ -48,3 +48,11 @@ function something()
 {
     // ..
 }
+
+function instrumenUji(App\Models\User $u, float $ukuran = 100, ?string $symbol = null): App\Models\Instrument
+{
+    return App\Models\Instrument::factory()->for($u)->create(array_filter([
+        'contract_size' => $ukuran,
+        'symbol' => $symbol,
+    ]));
+}

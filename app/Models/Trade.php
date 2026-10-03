@@ -25,11 +25,18 @@ class Trade extends Model
 
     public const DIRECTION_SHORT = 'short';
 
+    /**
+     * risk_amount dan pnl_amount sengaja TIDAK fillable: keduanya diturunkan
+     * dari harga lewat TradeMath, bukan diketik pengguna. Menjadikannya
+     * fillable membuka jalan angka yang tidak cocok dengan harganya sendiri.
+     */
     protected $fillable = [
         'symbol',
         'direction',
-        'risk_amount',
-        'pnl_amount',
+        'lot_size',
+        'entry_price',
+        'stop_price',
+        'exit_price',
         'opened_at',
         'closed_at',
         'notes',
@@ -40,6 +47,11 @@ class Trade extends Model
         return [
             'risk_amount' => 'decimal:2',
             'pnl_amount' => 'decimal:2',
+            'lot_size' => 'decimal:4',
+            'entry_price' => 'decimal:8',
+            'stop_price' => 'decimal:8',
+            'exit_price' => 'decimal:8',
+            'contract_size' => 'decimal:8',
             'compliance_score' => 'integer',
             'opened_at' => 'datetime',
             'closed_at' => 'datetime',
@@ -54,6 +66,11 @@ class Trade extends Model
     public function ruleChecks(): HasMany
     {
         return $this->hasMany(TradeRuleCheck::class);
+    }
+
+    public function instrument(): BelongsTo
+    {
+        return $this->belongsTo(Instrument::class);
     }
 
     public static function directions(): array

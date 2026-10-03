@@ -9,6 +9,8 @@ use App\Models\User;
 use App\Support\ComplianceScore;
 use Livewire\Volt\Volt;
 
+
+
 /*
 |--------------------------------------------------------------------------
 | Pengerasan hasil review milestone 3
@@ -38,13 +40,14 @@ it('mengabaikan key checks milik rule pengguna lain', function () {
     $ruleBob = SetupRule::factory()->for($bob)->for($setupBob, 'setup')->create(['weight' => 5]);
 
     $this->actingAs($alice);
+    $ins = instrumenUji($alice);
     [$setupAlice, $r1] = setupDenganDuaRule($alice);
 
     Volt::test('trades.record')
         ->set('tradingSetupId', $setupAlice->id)
         ->set('checks', [$r1->id => true, $ruleBob->id => true])
-        ->set('symbol', 'XAUUSD')
-        ->set('riskAmount', '50')
+        ->set('instrumentId', $ins->id)
+        ->set('lotSize', '0.05')->set('entryPrice', '2000')->set('stopPrice', '1990')
         ->set('openedAt', now()->format('Y-m-d\TH:i'))
         ->call('save')
         ->assertHasNoErrors();
@@ -60,6 +63,7 @@ it('mengabaikan key checks milik rule pengguna lain', function () {
 it('mengabaikan rule yang sudah diarsipkan saat mencatat', function () {
     $alice = User::factory()->create();
     $this->actingAs($alice);
+    $ins = instrumenUji($alice);
 
     [$setup, $r1, $r2] = setupDenganDuaRule($alice);
 
@@ -69,8 +73,8 @@ it('mengabaikan rule yang sudah diarsipkan saat mencatat', function () {
     Volt::test('trades.record')
         ->set('tradingSetupId', $setup->id)
         ->set('checks', [$r1->id => true, $r2->id => true])
-        ->set('symbol', 'XAUUSD')
-        ->set('riskAmount', '50')
+        ->set('instrumentId', $ins->id)
+        ->set('lotSize', '0.05')->set('entryPrice', '2000')->set('stopPrice', '1990')
         ->set('openedAt', now()->format('Y-m-d\TH:i'))
         ->call('save')
         ->assertHasNoErrors();
@@ -84,6 +88,7 @@ it('mengabaikan rule yang sudah diarsipkan saat mencatat', function () {
 it('menjaga skor tetap sama dengan snapshot meski rule berubah sebelum simpan', function () {
     $alice = User::factory()->create();
     $this->actingAs($alice);
+    $ins = instrumenUji($alice);
 
     [$setup, $r1, $r2] = setupDenganDuaRule($alice);
 
@@ -94,8 +99,8 @@ it('menjaga skor tetap sama dengan snapshot meski rule berubah sebelum simpan', 
     // Tab lain merevisi bobot setelah form dirender, sebelum tombol ditekan.
     $r1->update(['weight' => 9]);
 
-    $komponen->set('symbol', 'XAUUSD')
-        ->set('riskAmount', '50')
+    $komponen->set('instrumentId', $ins->id)
+        ->set('lotSize', '0.05')->set('entryPrice', '2000')->set('stopPrice', '1990')
         ->set('openedAt', now()->format('Y-m-d\TH:i'))
         ->call('save')
         ->assertHasNoErrors();
@@ -114,14 +119,15 @@ it('menjaga skor tetap sama dengan snapshot meski rule berubah sebelum simpan', 
 it('menghapus akun berikut setup, trade, dan checklist-nya', function () {
     $alice = User::factory()->create();
     $this->actingAs($alice);
+    $ins = instrumenUji($alice);
 
     [$setup, $r1] = setupDenganDuaRule($alice);
 
     Volt::test('trades.record')
         ->set('tradingSetupId', $setup->id)
         ->set('checks', [$r1->id => true])
-        ->set('symbol', 'XAUUSD')
-        ->set('riskAmount', '50')
+        ->set('instrumentId', $ins->id)
+        ->set('lotSize', '0.05')->set('entryPrice', '2000')->set('stopPrice', '1990')
         ->set('openedAt', now()->format('Y-m-d\TH:i'))
         ->call('save');
 
@@ -140,6 +146,7 @@ it('menghapus akun berikut setup, trade, dan checklist-nya', function () {
 it('menolak risiko yang membulat menjadi nol', function () {
     $alice = User::factory()->create();
     $this->actingAs($alice);
+    $ins = instrumenUji($alice);
 
     [$setup] = setupDenganDuaRule($alice);
 
@@ -147,26 +154,27 @@ it('menolak risiko yang membulat menjadi nol', function () {
     // decimal(18,2), membuat R-multiple mustahil dihitung.
     Volt::test('trades.record')
         ->set('tradingSetupId', $setup->id)
-        ->set('symbol', 'XAUUSD')
-        ->set('riskAmount', '0.001')
+        ->set('instrumentId', $ins->id)
+        ->set('lotSize', '0.1')->set('entryPrice', '2000')->set('stopPrice', '2000')
         ->set('openedAt', now()->format('Y-m-d\TH:i'))
         ->call('save')
-        ->assertHasErrors('riskAmount');
+        ->assertHasErrors('stopPrice');
 });
 
 it('menolak nilai yang melampaui kapasitas kolom', function () {
     $alice = User::factory()->create();
     $this->actingAs($alice);
+    $ins = instrumenUji($alice);
 
     [$setup] = setupDenganDuaRule($alice);
 
     Volt::test('trades.record')
         ->set('tradingSetupId', $setup->id)
-        ->set('symbol', 'XAUUSD')
-        ->set('riskAmount', '1e30')
+        ->set('instrumentId', $ins->id)
+        ->set('lotSize', '1e30')->set('entryPrice', '2000')->set('stopPrice', '1990')
         ->set('openedAt', now()->format('Y-m-d\TH:i'))
         ->call('save')
-        ->assertHasErrors('riskAmount');
+        ->assertHasErrors('lotSize');
 });
 
 it('menampilkan peringatan sesuai ambang milik pengguna', function () {

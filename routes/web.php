@@ -20,6 +20,10 @@ Route::view('setups', 'setups')
     ->middleware(['auth', 'verified'])
     ->name('setups');
 
+Route::view('instruments', 'instruments')
+    ->middleware(['auth', 'verified'])
+    ->name('instruments');
+
 Route::view('profile', 'profile')
     ->middleware(['auth'])
     ->name('profile');

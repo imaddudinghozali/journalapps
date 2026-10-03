@@ -39,6 +39,9 @@ new class extends Component
                     <x-nav-link :href="route('setups')" :active="request()->routeIs('setups')" wire:navigate>
                         {{ __('Setup & Rules') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('instruments')" :active="request()->routeIs('instruments')" wire:navigate>
+                        {{ __('Instrumen') }}
+                    </x-nav-link>
                     <x-nav-link :href="route('reports')" :active="request()->routeIs('reports')" wire:navigate>
                         {{ __('Laporan') }}
                     </x-nav-link>
@@ -98,6 +101,9 @@ new class extends Component
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('setups')" :active="request()->routeIs('setups')" wire:navigate>
                 {{ __('Setup & Rules') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('instruments')" :active="request()->routeIs('instruments')" wire:navigate>
+                {{ __('Instrumen') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('reports')" :active="request()->routeIs('reports')" wire:navigate>
                 {{ __('Laporan') }}

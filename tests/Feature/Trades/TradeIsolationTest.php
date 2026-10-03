@@ -94,7 +94,9 @@ it('menolak pembuatan trade atas nama pengguna lain', function () {
     $trade = new Trade([
         'symbol' => 'XAUUSD',
         'direction' => Trade::DIRECTION_LONG,
-        'risk_amount' => 50,
+        'lot_size' => 0.1,
+        'entry_price' => 2000,
+        'stop_price' => 1990,
         'opened_at' => now(),
     ]);
     $trade->trading_setup_id = $setupBob->id;
@@ -126,7 +128,9 @@ it('menolak trade yang menunjuk setup milik pengguna lain', function () {
     $trade = new Trade([
         'symbol' => 'XAUUSD',
         'direction' => Trade::DIRECTION_LONG,
-        'risk_amount' => 50,
+        'lot_size' => 0.1,
+        'entry_price' => 2000,
+        'stop_price' => 1990,
         'opened_at' => now(),
     ]);
     $trade->trading_setup_id = $setupAlice->id;

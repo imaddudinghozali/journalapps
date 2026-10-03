@@ -16,6 +16,14 @@ class TradeRuleCheckFactory extends Factory
 {
     protected $model = TradeRuleCheck::class;
 
+    public function newModel(array $attributes = [])
+    {
+        $model = parent::newModel();
+        $model->forceFill($attributes);
+
+        return $model;
+    }
+
     public function definition(): array
     {
         return [

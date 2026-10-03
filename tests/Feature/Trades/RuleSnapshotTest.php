@@ -6,6 +6,8 @@ use App\Models\TradingSetup;
 use App\Models\User;
 use Livewire\Volt\Volt;
 
+
+
 /*
 |--------------------------------------------------------------------------
 | Jaminan snapshot rule
@@ -24,11 +26,14 @@ use Livewire\Volt\Volt;
 
 function catatTrade(User $user, TradingSetup $setup, array $checks, string $symbol = 'XAUUSD'): Trade
 {
+    $ins = App\Models\Instrument::where('symbol', $symbol)->first()
+        ?? App\Models\Instrument::factory()->for($user)->create(['symbol' => $symbol, 'contract_size' => 100]);
+
     Volt::test('trades.record')
         ->set('tradingSetupId', $setup->id)
         ->set('checks', $checks)
-        ->set('symbol', $symbol)
-        ->set('riskAmount', '50')
+        ->set('instrumentId', $ins->id)
+        ->set('lotSize', '0.05')->set('entryPrice', '2000')->set('stopPrice', '1990')
         ->set('openedAt', now()->format('Y-m-d\TH:i'))
         ->call('save')
         ->assertHasNoErrors();

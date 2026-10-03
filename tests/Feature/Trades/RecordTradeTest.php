@@ -8,6 +8,8 @@ use App\Models\User;
 use App\Support\ComplianceScore;
 use Livewire\Volt\Volt;
 
+
+
 function setupDenganRules(User $user, array $bobot = [1, 3], bool $adaWajib = false): TradingSetup
 {
     $setup = TradingSetup::factory()->for($user)->create();
@@ -46,16 +48,17 @@ it('menolak pengguna belum terverifikasi membuka jurnal', function () {
 it('mencatat trade beserta jawaban checklist', function () {
     $alice = User::factory()->create();
     $this->actingAs($alice);
+    $ins = instrumenUji($alice);
     $setup = setupDenganRules($alice, [1, 3]);
     [$r1, $r2] = $setup->rules()->orderBy('position')->get()->all();
 
     Volt::test('trades.record')
         ->set('tradingSetupId', $setup->id)
         ->set('checks', [$r1->id => true, $r2->id => false])
-        ->set('symbol', 'xauusd')
+        ->set('instrumentId', $ins->id)
         ->set('direction', Trade::DIRECTION_LONG)
-        ->set('riskAmount', '50')
-        ->set('pnlAmount', '125.5')
+        ->set('lotSize', '0.05')->set('entryPrice', '2000')->set('stopPrice', '1990')
+        ->set('exitPrice', '2012.55')
         ->set('openedAt', now()->subHour()->format('Y-m-d\TH:i'))
         ->set('closedAt', now()->format('Y-m-d\TH:i'))
         ->call('save')
@@ -63,24 +66,26 @@ it('mencatat trade beserta jawaban checklist', function () {
 
     $trade = Trade::first();
 
-    expect($trade->symbol)->toBe('XAUUSD')
+    expect($trade->symbol)->toBe($ins->symbol)
         ->and($trade->user_id)->toBe($alice->id)
         ->and($trade->trading_setup_id)->toBe($setup->id)
-        ->and((float) $trade->pnl_amount)->toBe(125.5)
+        ->and((float) $trade->pnl_amount)->toBe(62.75)
+        ->and((float) $trade->risk_amount)->toBe(50.0)
         ->and($trade->ruleChecks()->count())->toBe(2);
 });
 
 it('menghitung skor kepatuhan berbobot saat menyimpan', function () {
     $alice = User::factory()->create();
     $this->actingAs($alice);
+    $ins = instrumenUji($alice);
     $setup = setupDenganRules($alice, [1, 3]);
     [$r1, $r2] = $setup->rules()->orderBy('position')->get()->all();
 
     Volt::test('trades.record')
         ->set('tradingSetupId', $setup->id)
         ->set('checks', [$r1->id => true, $r2->id => false])
-        ->set('symbol', 'XAUUSD')
-        ->set('riskAmount', '50')
+        ->set('instrumentId', $ins->id)
+        ->set('lotSize', '0.05')->set('entryPrice', '2000')->set('stopPrice', '1990')
         ->set('openedAt', now()->format('Y-m-d\TH:i'))
         ->call('save');
 
@@ -91,6 +96,7 @@ it('menghitung skor kepatuhan berbobot saat menyimpan', function () {
 it('menyimpan skor yang selalu sama dengan hasil hitung ulang dari checklist', function () {
     $alice = User::factory()->create();
     $this->actingAs($alice);
+    $ins = instrumenUji($alice);
     $setup = setupDenganRules($alice, [2, 3, 5]);
     $rules = $setup->rules()->orderBy('position')->get();
 
@@ -101,8 +107,8 @@ it('menyimpan skor yang selalu sama dengan hasil hitung ulang dari checklist', f
             $rules[1]->id => false,
             $rules[2]->id => true,
         ])
-        ->set('symbol', 'EURUSD')
-        ->set('riskAmount', '20')
+        ->set('instrumentId', $ins->id)
+        ->set('lotSize', '0.02')->set('entryPrice', '2000')->set('stopPrice', '1990')
         ->set('openedAt', now()->format('Y-m-d\TH:i'))
         ->call('save');
 
@@ -118,12 +124,13 @@ it('menyimpan skor yang selalu sama dengan hasil hitung ulang dari checklist', f
 it('menyimpan trade tanpa skor ketika setup belum punya rule', function () {
     $alice = User::factory()->create();
     $this->actingAs($alice);
+    $ins = instrumenUji($alice);
     $setup = TradingSetup::factory()->for($alice)->create();
 
     Volt::test('trades.record')
         ->set('tradingSetupId', $setup->id)
-        ->set('symbol', 'BTCUSD')
-        ->set('riskAmount', '100')
+        ->set('instrumentId', $ins->id)
+        ->set('lotSize', '0.1')->set('entryPrice', '2000')->set('stopPrice', '1990')
         ->set('openedAt', now()->format('Y-m-d\TH:i'))
         ->call('save')
         ->assertHasNoErrors();
@@ -135,6 +142,7 @@ it('menyimpan trade tanpa skor ketika setup belum punya rule', function () {
 it('tetap menyimpan trade yang kepatuhannya rendah', function () {
     $alice = User::factory()->create(['compliance_threshold' => 80]);
     $this->actingAs($alice);
+    $ins = instrumenUji($alice);
     $setup = setupDenganRules($alice, [1, 3]);
     $rules = $setup->rules()->orderBy('position')->get();
 
@@ -143,8 +151,8 @@ it('tetap menyimpan trade yang kepatuhannya rendah', function () {
     Volt::test('trades.record')
         ->set('tradingSetupId', $setup->id)
         ->set('checks', [$rules[0]->id => false, $rules[1]->id => false])
-        ->set('symbol', 'XAUUSD')
-        ->set('riskAmount', '50')
+        ->set('instrumentId', $ins->id)
+        ->set('lotSize', '0.05')->set('entryPrice', '2000')->set('stopPrice', '1990')
         ->set('openedAt', now()->format('Y-m-d\TH:i'))
         ->call('save')
         ->assertHasNoErrors();
@@ -156,14 +164,15 @@ it('tetap menyimpan trade yang kepatuhannya rendah', function () {
 it('tetap menyimpan trade yang melanggar rule wajib', function () {
     $alice = User::factory()->create();
     $this->actingAs($alice);
+    $ins = instrumenUji($alice);
     $setup = setupDenganRules($alice, [1, 9], adaWajib: true);
     $rules = $setup->rules()->orderBy('position')->get();
 
     Volt::test('trades.record')
         ->set('tradingSetupId', $setup->id)
         ->set('checks', [$rules[0]->id => false, $rules[1]->id => true])
-        ->set('symbol', 'XAUUSD')
-        ->set('riskAmount', '50')
+        ->set('instrumentId', $ins->id)
+        ->set('lotSize', '0.05')->set('entryPrice', '2000')->set('stopPrice', '1990')
         ->set('openedAt', now()->format('Y-m-d\TH:i'))
         ->call('save')
         ->assertHasNoErrors();
@@ -172,11 +181,13 @@ it('tetap menyimpan trade yang melanggar rule wajib', function () {
 });
 
 it('menolak menyimpan tanpa memilih setup', function () {
-    $this->actingAs(User::factory()->create());
+    $alice = User::factory()->create();
+    $this->actingAs($alice);
+    $ins = instrumenUji($alice);
 
     Volt::test('trades.record')
-        ->set('symbol', 'XAUUSD')
-        ->set('riskAmount', '50')
+        ->set('instrumentId', $ins->id)
+        ->set('lotSize', '0.05')->set('entryPrice', '2000')->set('stopPrice', '1990')
         ->set('openedAt', now()->format('Y-m-d\TH:i'))
         ->call('save')
         ->assertHasErrors('tradingSetupId');
@@ -185,26 +196,28 @@ it('menolak menyimpan tanpa memilih setup', function () {
 it('menolak risiko nol atau negatif', function () {
     $alice = User::factory()->create();
     $this->actingAs($alice);
+    $ins = instrumenUji($alice);
     $setup = setupDenganRules($alice);
 
     Volt::test('trades.record')
         ->set('tradingSetupId', $setup->id)
-        ->set('symbol', 'XAUUSD')
-        ->set('riskAmount', '0')
+        ->set('instrumentId', $ins->id)
+        ->set('lotSize', '0.1')->set('entryPrice', '2000')->set('stopPrice', '2000')
         ->set('openedAt', now()->format('Y-m-d\TH:i'))
         ->call('save')
-        ->assertHasErrors('riskAmount');
+        ->assertHasErrors('stopPrice');
 });
 
 it('menolak waktu tutup yang mendahului waktu buka', function () {
     $alice = User::factory()->create();
     $this->actingAs($alice);
+    $ins = instrumenUji($alice);
     $setup = setupDenganRules($alice);
 
     Volt::test('trades.record')
         ->set('tradingSetupId', $setup->id)
-        ->set('symbol', 'XAUUSD')
-        ->set('riskAmount', '50')
+        ->set('instrumentId', $ins->id)
+        ->set('lotSize', '0.05')->set('entryPrice', '2000')->set('stopPrice', '1990')
         ->set('openedAt', now()->format('Y-m-d\TH:i'))
         ->set('closedAt', now()->subDay()->format('Y-m-d\TH:i'))
         ->call('save')
@@ -218,11 +231,12 @@ it('tidak mencatat trade pada setup milik pengguna lain', function () {
     $setupAlice = setupDenganRules($alice);
 
     $this->actingAs($bob);
+    $ins = instrumenUji($bob);
 
     Volt::test('trades.record')
         ->set('tradingSetupId', $setupAlice->id)
-        ->set('symbol', 'XAUUSD')
-        ->set('riskAmount', '50')
+        ->set('instrumentId', $ins->id)
+        ->set('lotSize', '0.05')->set('entryPrice', '2000')->set('stopPrice', '1990')
         ->set('openedAt', now()->format('Y-m-d\TH:i'))
         ->call('save')
         ->assertHasErrors('tradingSetupId');
