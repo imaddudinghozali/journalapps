@@ -4,8 +4,12 @@ use App\Models\Trade;
 use App\Support\Angka;
 use App\Support\ComplianceTone;
 use App\Support\DashboardMetrics;
+use App\Support\Periode;
+use App\Support\TradeStatistics;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Url;
 use Livewire\Volt\Component;
 
 new class extends Component
@@ -14,13 +18,42 @@ new class extends Component
 
     public int $month;
 
+    /**
+     * Rentang waktu untuk kartu ringkasan.
+     *
+     * Ikut ke query string supaya rentang yang dipilih selamat dari muat
+     * ulang. Konsekuensinya ia masukan yang tidak dipercaya, jadi properti ini
+     * TIDAK PERNAH dibaca langsung - selalu lewat rentang(), yang menjatuhkan
+     * kunci asing ke seluruh riwayat.
+     */
+    #[Url]
+    public string $periode = Periode::BAWAAN;
+
     /** Tanggal yang sedang dibuka ringkasannya dari kalender, format Y-m-d. */
     public ?string $tanggalDipilih = null;
+
+    /** Kueri trade untuk satu request. Private, jadi tidak ikut diserialkan. */
+    private ?Collection $kumpulan = null;
 
     public function mount(): void
     {
         $this->year = (int) now()->year;
         $this->month = (int) now()->month;
+    }
+
+    #[Computed]
+    public function rentang(): Periode
+    {
+        return Periode::dari($this->periode);
+    }
+
+    public function pilihPeriode(string $kunci): void
+    {
+        $this->periode = Periode::dari($kunci)->kunci;
+
+        // Tanggal yang dibuka di kalender sengaja TIDAK direset: kalender
+        // punya navigasi bulan sendiri dan tidak ikut rentang ini.
+        unset($this->rentang, $this->metrik);
     }
 
     /**
@@ -30,12 +63,40 @@ new class extends Component
      * DashboardMetrics menolak bekerja tanpa keduanya.
      */
     #[Computed]
+    public function metrikPenuh(): DashboardMetrics
+    {
+        return DashboardMetrics::from($this->trades(), $this->ambang());
+    }
+
+    /**
+     * Angka yang sama, dipotong ke rentang yang dipilih.
+     *
+     * Pada seluruh riwayat ia mengembalikan objek yang SAMA, bukan hitungan
+     * kedua atas koleksi yang identik - jalur bawaan tidak ikut membayar biaya
+     * fitur ini.
+     */
+    #[Computed]
     public function metrik(): DashboardMetrics
     {
+        if ($this->rentang()->seluruhRiwayat()) {
+            return $this->metrikPenuh();
+        }
+
         return DashboardMetrics::from(
-            Trade::with(['setup', 'ruleChecks'])->get(),
-            (int) auth()->user()->compliance_threshold,
+            $this->rentang()->saring($this->trades()),
+            $this->ambang(),
         );
+    }
+
+    /** @return Collection<int, Trade> */
+    private function trades(): Collection
+    {
+        return $this->kumpulan ??= Trade::with(['setup', 'ruleChecks'])->get();
+    }
+
+    private function ambang(): int
+    {
+        return (int) auth()->user()->compliance_threshold;
     }
 
     /**
@@ -110,8 +171,11 @@ new class extends Component
     public function calendarWeeks(): array
     {
         $awal = Carbon::create($this->year, $this->month, 1)->startOfWeek(Carbon::SUNDAY);
-        $harian = $this->metrik()->summary->monthlyPnl($this->year, $this->month);
-        $kepatuhan = $this->metrik()->kepatuhanHarian();
+        // metrikPenuh, bukan metrik: kalender punya navigasi bulan sendiri dan
+        // tidak ikut rentang di atas. Kalender yang disaring ke "Hari ini"
+        // cuma menyisakan satu sel berwarna dan kehilangan seluruh gunanya.
+        $harian = $this->metrikPenuh()->summary->monthlyPnl($this->year, $this->month);
+        $kepatuhan = $this->metrikPenuh()->kepatuhanHarian();
 
         $sel = [];
 
@@ -155,8 +219,19 @@ new class extends Component
 ?>
 
 @php
+    $penuh = $this->metrikPenuh;
+    $rentang = $this->rentang;
     $m = $this->metrik;
     $s = $m->summary;
+
+    // R kumulatif terakhir, untuk menyandingkan dolar dengan satuan pokok.
+    // Diambil lewat indeks, bukan end(): end() menerima argumennya sebagai
+    // referensi dan cumulativeR adalah properti readonly.
+    $kum = $m->cumulativeR;
+    $totalR = $kum === [] ? null : (float) $kum[count($kum) - 1]['cumulative'];
+
+    $rentangKosong = ! $rentang->seluruhRiwayat() && $s->closedCount === 0;
+    $sebutan = $rentang->seluruhRiwayat() ? 'sepanjang riwayat' : mb_strtolower($rentang->label());
 @endphp
 
 <div class="space-y-6">
@@ -193,7 +268,11 @@ new class extends Component
         </section>
     @endif
 
-    @if ($m->isEmpty())
+    {{-- Pertanyaan "apakah ada data sama sekali" dijawab angka yang TIDAK
+         tersaring. Memakai angka tersaring akan memunculkan ajakan mencatat
+         trade pertama kepada orang yang sudah punya ratusan trade, cuma
+         karena hari ini ia belum trading. --}}
+    @if ($penuh->isEmpty())
         <div class="blok p-8">
             <h2 class="text-lg font-medium text-ink">Belum ada yang bisa diringkas</h2>
             <p class="mt-2 max-w-[60ch] text-sm text-ink-muted">
@@ -203,12 +282,81 @@ new class extends Component
             </p>
         </div>
     @else
+        {{-- Pemilih rentang. Kartu ringkasan mengikutinya, kalender di bawah
+             tidak: keduanya menjawab pertanyaan berbeda. Kartu menjawab
+             "seberapa baik rentang ini", kalender menjawab "hari yang mana". --}}
+        <div class="kaca panel flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-3 py-2.5 sm:px-4">
+            <div class="flex flex-wrap items-center gap-1" role="group" aria-label="Rentang waktu ringkasan">
+                @foreach (Periode::daftar() as $kunci => $label)
+                    <button type="button"
+                            wire:click="pilihPeriode('{{ $kunci }}')"
+                            wire:key="periode-{{ $kunci }}"
+                            @if ($rentang->kunci === $kunci) aria-current="true" @endif
+                            class="pil-nav rounded-full px-3 py-1.5 text-sm {{ $rentang->kunci === $kunci ? 'pil-nav-aktif font-medium text-ink' : 'text-ink-muted hover:text-ink' }}">
+                        {{ $label }}
+                    </button>
+                @endforeach
+            </div>
+
+            {{-- Ambang sampel disebut terang-terangan. Tanpa kalimat ini,
+                 menyempitkan rentang akan membuat tiga kartu mendadak berisi
+                 "belum ada" dan terbaca sebagai halaman yang rusak. --}}
+            <p class="text-xs text-ink-faint">
+                @if ($s->closedCount === 0)
+                    Belum ada trade tertutup {{ $sebutan }}.
+                @elseif ($s->closedCount < TradeStatistics::MIN_SAMPLE)
+                    {{ $s->closedCount }} dari {{ TradeStatistics::MIN_SAMPLE }} trade &mdash; expectancy,
+                    profit factor, dan win rate masih disembunyikan.
+                @else
+                    {{ $s->closedCount }} trade tertutup {{ $sebutan }}.
+                @endif
+            </p>
+        </div>
+
+        @if ($rentangKosong)
+            <div class="blok p-8">
+                <h2 class="text-lg font-medium text-ink">Tidak ada trade tertutup {{ $sebutan }}</h2>
+                <p class="mt-2 max-w-[60ch] text-sm text-ink-muted">
+                    Riwayatmu tetap utuh &mdash; yang kosong hanya rentang ini. Kalender di bawah masih
+                    memperlihatkan seluruh bulannya.
+                </p>
+                <button type="button" wire:click="pilihPeriode('{{ Periode::SEMUA }}')"
+                        class="press tombol-aksen mt-4 rounded-md px-3 py-1.5 text-sm">
+                    Lihat seluruh riwayat
+                </button>
+            </div>
+        @else
         {{-- Kalimat insight di atas baris angka: ia yang menjawab pertanyaan
              produk ini, sementara KPI cuma bahan bakunya. --}}
         <x-dasbor.insight :metrik="$m" />
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <x-dasbor.kepatuhan :metrik="$m" :delay="0" />
+            {{-- Rentetan diambil dari angka yang TIDAK tersaring. Rentetan
+                 adalah hitungan mundur dari trade terbaru; memotongnya ke
+                 rentang akan mencetak angka yang lebih kecil dari kenyataan,
+                 dan itu bukan sekadar kurang lengkap - itu salah. --}}
+            <x-dasbor.kepatuhan :metrik="$m" :rentetan="$penuh->complianceStreak" :delay="0" />
+
+            <x-dasbor.kpi
+                label="Total P&L"
+                :nilai="Angka::uang($s->netPnl, true)"
+                :angka="$s->netPnl"
+                opsi="{ desimal: 2, tanda: true, awalan: '$' }"
+                :nada="Angka::nada($s->netPnl)"
+                :sub="$totalR === null ? $s->closedCount.' trade tertutup' : 'setara '.Angka::r($totalR)"
+                :delay="60">
+                <x-slot:ikon><x-phosphor-currency-dollar class="h-4 w-4" /></x-slot:ikon>
+
+                @unless ($rentang->seluruhRiwayat())
+                    {{-- Angka seluruh riwayat tetap terlihat saat rentang
+                         disempitkan, supaya menyaring tidak pernah terasa
+                         seperti kehilangan uang. --}}
+                    <div class="mt-2 text-xs text-ink-faint">
+                        Sepanjang riwayat
+                        <span class="tabular {{ Angka::nada($penuh->summary->netPnl) }}">{{ Angka::uang($penuh->summary->netPnl, true) }}</span>
+                    </div>
+                @endunless
+            </x-dasbor.kpi>
 
             <x-dasbor.kpi
                 label="Expectancy"
@@ -217,7 +365,7 @@ new class extends Component
                 opsi="{ desimal: 2, tanda: true, akhiran: 'R' }"
                 :nada="Angka::nada($m->expectancyR)"
                 :sub="'rata-rata '.Angka::uang($s->avgTrade, true).' per trade'"
-                :delay="60">
+                :delay="120">
                 <x-slot:ikon><x-phosphor-target class="h-4 w-4" /></x-slot:ikon>
             </x-dasbor.kpi>
 
@@ -227,7 +375,7 @@ new class extends Component
                 :angka="$m->profitFactor"
                 opsi="{ desimal: 2 }"
                 :sub="$m->profitFactor === null ? 'belum pernah rugi' : 'untung dibagi rugi'"
-                :delay="120">
+                :delay="180">
                 <x-slot:ikon><x-phosphor-scales class="h-4 w-4" /></x-slot:ikon>
             </x-dasbor.kpi>
 
@@ -237,7 +385,7 @@ new class extends Component
                 :angka="$m->winRate"
                 opsi="{ desimal: 0, akhiran: '%' }"
                 :sub="$s->closedCount.' trade tertutup'"
-                :delay="180">
+                :delay="240">
                 <x-slot:ikon><x-phosphor-percent class="h-4 w-4" /></x-slot:ikon>
             </x-dasbor.kpi>
 
@@ -246,7 +394,7 @@ new class extends Component
                 :nilai="Angka::r($m->avgWinR)"
                 :nada="Angka::nada($m->avgWinR)"
                 :sub="'kalah '.Angka::r($m->avgLossR)"
-                :delay="240">
+                :delay="300">
                 <x-slot:ikon><x-phosphor-arrows-out-line-vertical class="h-4 w-4" /></x-slot:ikon>
 
                 @php
@@ -271,7 +419,7 @@ new class extends Component
                 opsi="{ desimal: 0 }"
                 :nada="$m->requiredViolations > 0 ? 'text-viz-negative' : 'text-ink'"
                 sub="rule wajib yang tidak terpenuhi"
-                :delay="300">
+                :delay="360">
                 <x-slot:ikon><x-phosphor-warning class="h-4 w-4" /></x-slot:ikon>
             </x-dasbor.kpi>
         </div>
@@ -287,6 +435,7 @@ new class extends Component
             <x-dasbor.pelanggaran :metrik="$m" :delay="60" />
             <x-dasbor.trade-terakhir :metrik="$m" :delay="120" />
         </div>
+        @endif
     @endif
 
     {{-- Kalender P&L harian --}}

@@ -38,7 +38,9 @@ tujuan dan kredensial, jadi tidak bisa diselesaikan dari repo saja.
 | Hal | Catatan |
 |---|---|
 | **Cadangan basis data** | Tidak ada apa pun. Jurnal bertahun-tahun yang hilang tidak bisa dibuat ulang dari mana pun. Ini risiko terbesar yang tidak masuk daftar blocker |
-| **Data nyata** | 16 trade sintetis di akun fixture. Hipotesis produknya — kepatuhan berkorelasi dengan P&L — belum diuji dengan satu pun trade sungguhan |
+| **Data nyata** | Hipotesis produknya — kepatuhan berkorelasi dengan P&L — belum diuji dengan sampel trade sungguhan yang memadai. Kondisi datanya ada di baris berikutnya |
+| **Memilah trade asli dari trade demo** | Akun pemilik (`imadlionel27@gmail.com`) berisi **50 trade: 4 asli bercampur 46 hasil `DemoTradesSeeder`**, atas keputusan sadar supaya tata letak dashboard bisa dinilai dengan data yang penuh. Keempat trade asli belum ditandai apa pun, jadi memilahnya nanti harus manual — lewat tanggal catat. Akun fixture `uji@localhost.test` juga sudah berisi demo (59 trade). **Sebelum rilis, keduanya harus dibersihkan** dan akun fixture dihapus |
+| **Batas atas tanggal tutup** | `closedAt` divalidasi `['nullable','date','after_or_equal:openedAt','required_with:exitPrice']` — tanpa batas atas, jadi trade bisa dicatat tertutup di masa depan. Akun fixture sudah punya 4 trade seperti itu dari uji manual. Akibatnya nyata di dashboard: trade masa depan ikut terhitung pada "Minggu ini"/"Bulan ini" dan muncul di kalender sebagai hari yang belum terjadi |
 | **Tampilan detail trade** | Hanya ada `/trades/{id}/edit`. Untuk sekadar melihat, pengguna harus masuk ke mode ubah |
 | **Mata uang akun** | Angka uang diasumsikan dolar. Kalau ada pengguna yang akunnya bukan USD, ini harus jadi pengaturan, bukan simbol yang dipatri di template |
 

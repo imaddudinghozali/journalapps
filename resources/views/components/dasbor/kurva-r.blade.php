@@ -30,12 +30,18 @@
     }
 @endphp
 
-<x-card label="P&amp;L kumulatif (R)" :delay="$delay" class="lg:col-span-2">
+<x-card label="P&L kumulatif (R)" :delay="$delay" class="lg:col-span-2">
     @if (! $cukup)
         <p class="mt-6 text-sm text-ink-faint">Butuh minimal dua trade tertutup sebelum ada garis yang bisa digambar.</p>
     @else
-        <div class="mt-2 flex items-baseline justify-between gap-4">
-            <span class="text-2xl font-semibold tracking-tight tabular {{ Angka::nada($akhir) }}">{{ Angka::r($akhir) }}</span>
+        <div class="mt-2 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+            <div class="flex items-baseline gap-2">
+                <span class="text-2xl font-semibold tracking-tight tabular {{ Angka::nada($akhir) }}">{{ Angka::r($akhir) }}</span>
+                {{-- Dolar sebagai keterangan, bukan angka pokok: R yang bisa
+                     dibandingkan antar instrumen, tapi dolar yang dirasakan.
+                     Keduanya perlu terbaca berdampingan. --}}
+                <span class="tabular text-sm text-ink-muted">{{ Angka::uang($metrik->summary->netPnl, true) }}</span>
+            </div>
             <span class="text-xs text-ink-faint">{{ count($titik) }} trade tertutup</span>
         </div>
 

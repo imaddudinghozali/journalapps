@@ -15,7 +15,7 @@
     $puncak = $harian === [] ? 0.0 : max(array_map('abs', array_values($harian)));
 @endphp
 
-<x-card label="P&amp;L harian" :delay="$delay">
+<x-card label="P&L harian" :delay="$delay">
     @if ($harian === [])
         <p class="mt-6 text-sm text-ink-faint">Belum ada hari dengan trade tertutup.</p>
     @else

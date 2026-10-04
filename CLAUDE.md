@@ -92,7 +92,18 @@ Belum ada model domain yang memakai trait ini (milestone 1 hanya membangun mekan
 
 **Jangan pernah memblokir penyimpanan trade karena kepatuhan rendah.** Hanya peringatan. Jurnal yang menolak mencatat trade buruk akan menghapus justru data yang paling perlu dipelajari. Ambangnya milik pengguna (`users.compliance_threshold`), bukan angka tetap aplikasi.
 
-**Jangan memberi badge, streak, atau perayaan atas skor tinggi.** Skor diisi sendiri oleh pengguna; memberinya penghargaan mendorong pencentangan tidak jujur dan merusak satu-satunya aset produk ini.
+**Jangan memberi badge atau perayaan atas skor tinggi.** Skor diisi sendiri oleh pengguna; memberinya penghargaan mendorong pencentangan tidak jujur dan merusak satu-satunya aset produk ini.
+
+**Rentetan patuh adalah pengecualian yang diputuskan sadar, bukan aturan yang terlewat.** Aturan di atas semula melarang streak juga. Dashboard sekarang menampilkan "N trade patuh berturut-turut" di kartu kepatuhan, atas keputusan pemilik produk setelah konsekuensinya disebutkan: angka yang bisa putus memang menciptakan dorongan untuk tidak memutuskannya, dan di aplikasi ini satu-satunya cara "mempertahankan" rentetan adalah mencentang checklist yang sebenarnya tidak terpenuhi.
+
+Batas yang menahannya tetap wajib dijaga:
+
+- Rentetan ditampilkan sebagai **angka telanjang** — tanpa api, piala, warna meriah, atau ucapan selamat. Ia keterangan, bukan hadiah.
+- **Tidak ada rekor tertinggi yang disimpan.** Menyimpan "rentetan terpanjangmu 23" mengubahnya dari keterangan menjadi sesuatu yang bisa dikejar.
+- Trade **tanpa skor memutus** rentetan, bukan melanjutkannya — menebaknya patuh berarti memberi nilai yang tidak pernah diisi siapa pun.
+- Rentetan dihitung mundur dari trade terbaru di **seluruh riwayat**, tidak pernah dipotong rentang waktu yang sedang dipilih di dashboard. Rentetan yang mengecil saat filter disempitkan adalah angka yang salah, bukan angka yang kurang lengkap.
+
+Kalau suatu saat rentetan mulai diberi perayaan dalam bentuk apa pun, yang benar adalah mencabut rentetannya, bukan menambah aturan baru.
 
 ## Laporan
 

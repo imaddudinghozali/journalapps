@@ -1,4 +1,4 @@
-@props(['metrik', 'delay' => 0])
+@props(['metrik', 'rentetan' => null, 'delay' => 0])
 
 @php
     use App\Support\Angka;
@@ -6,6 +6,11 @@
 
     $skor = $metrik->avgCompliance;
     $selisih = $metrik->complianceDelta;
+
+    // Rentetan boleh datang dari luar. Ia hitungan mundur dari trade terbaru,
+    // jadi saat kartu ini dipakai dengan angka yang tersaring rentang waktu,
+    // rentetan tetap harus dihitung dari seluruh riwayat.
+    $rentetan ??= $metrik->complianceStreak;
 
     // Keliling 2*pi*r dengan r=34 pada kanvas 80x80.
     $keliling = 2 * M_PI * 34;
@@ -42,7 +47,7 @@
             @endif
 
             <p class="tabular text-ink-muted">
-                {{ $metrik->complianceStreak }} trade patuh berturut-turut
+                {{ $rentetan }} trade patuh berturut-turut
             </p>
 
             <p class="text-xs text-ink-faint">
