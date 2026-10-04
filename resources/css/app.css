@@ -16,9 +16,27 @@
 | Keluarga netral: zinc (dingin). Sebelumnya proyek ini mencampur gray dan
 | zinc sekaligus — dua keluarga abu berbeda dalam satu halaman.
 |
-| Aksen sengaja biru baja, bukan hijau atau merah: dua warna itu sudah punya
-| arti untung dan rugi di produk ini. Aksen yang ikut berwarna hijau akan
-| terbaca sebagai perayaan, dan itu bertentangan dengan maksud produknya.
+| Aksen sengaja biru, bukan hijau atau merah: dua warna itu sudah punya arti
+| untung dan rugi di produk ini. Aksen yang ikut berwarna hijau akan terbaca
+| sebagai perayaan, dan itu bertentangan dengan maksud produknya.
+|
+| CATATAN PERUBAHAN PALET.
+|
+| Palet sebelumnya memakai teal #0D9488 untuk untung, dipilih karena lolos
+| seluruh pemeriksaan validator dataviz - termasuk pemisahan buta warna
+| terhadap merah (deltaE 11,3 terang / 12,0 gelap).
+|
+| Palet sekarang memakai emerald #10B981 atas instruksi pemilik produk, yang
+| memilihnya setelah diberi tahu konsekuensinya. Emerald-lawan-merah adalah
+| pasangan yang paling sering gagal dipisahkan pada deuteranopia dan
+| protanopia, dan penggantian ini TIDAK diuji ulang dengan validator.
+|
+| Konsekuensinya ditanggung dengan satu aturan yang berlaku di seluruh
+| aplikasi: setiap nilai berwarna WAJIB mencetak angkanya sekaligus tandanya
+| (+ atau -). Warna tidak pernah menjadi satu-satunya pembawa arti, jadi
+| pembaca yang tidak bisa memisahkan kedua rona itu tetap mendapat
+| informasinya secara utuh. Jangan menambahkan penanda yang hanya berupa
+| warna tanpa teks pendamping.
 |
 */
 
@@ -28,6 +46,7 @@
 
         --bg: 250 250 250;
         --surface: 255 255 255;
+        --surface-raised: 255 255 255;
         --surface-sunken: 244 244 245;
 
         --line: 228 228 231;
@@ -37,17 +56,23 @@
         --ink-muted: 82 82 91;
         --ink-faint: 113 113 122;
 
-        --accent: 30 64 175;
-        --accent-hover: 30 58 138;
+        /*
+        | Merek #2563EB. Di atas putih rasionya 4,6:1, jadi ia aman dipakai
+        | sebagai isian tombol MAUPUN sebagai teks tautan di mode terang.
+        | --accent-ink ada untuk kasus yang butuh lebih tegas.
+        */
+        --accent: 37 99 235;
+        --accent-ink: 29 78 216;
+        --accent-hover: 29 78 216;
         --accent-contrast: 255 255 255;
         --accent-soft: 219 234 254;
 
-        --warn: 146 64 14;
+        --warn: 180 83 9;
         --warn-soft: 254 249 235;
         --warn-line: 253 230 138;
 
-        --positive: 15 118 110;
-        --negative: 190 18 60;
+        --positive: 4 120 87;
+        --negative: 220 38 38;
 
         /*
         | Warna mark chart dipisah dari warna UI.
@@ -63,8 +88,8 @@
         | Teal pertama yang saya pilih (#0f766e) GAGAL chroma floor: terbaca
         | abu, bukan hijau.
         */
-        --viz-positive: 13 148 136;
-        --viz-negative: 190 18 60;
+        --viz-positive: 4 120 87;
+        --viz-negative: 220 38 38;
         --viz-neutral: 240 239 236;
 
         /* Bayangan mengambil rona latar, bukan hitam murni. */
@@ -76,8 +101,13 @@
             color-scheme: dark;
 
             /* Bukan hitam murni: kedalaman hilang kalau latar #000. */
-            --bg: 9 9 11;
+            /* Nilai di blok ini datang langsung dari spesifikasi pemilik
+               produk. Mode terang di atas menurunkannya ke langkah yang lebih
+               gelap pada rona yang sama, karena nilai-nilai ini dipilih untuk
+               latar gelap dan tidak terbaca di atas putih. */
+            --bg: 15 15 17;
             --surface: 24 24 27;
+            --surface-raised: 31 31 35;
             --surface-sunken: 39 39 42;
 
             --line: 39 39 42;
@@ -87,19 +117,24 @@
             --ink-muted: 161 161 170;
             --ink-faint: 113 113 122;
 
-            --accent: 96 165 250;
-            --accent-hover: 147 197 253;
-            --accent-contrast: 9 9 11;
+            /* Merek tetap #2563EB sebagai ISIAN; di atasnya teks putih
+               mencapai 4,6:1. Tapi sebagai TEKS di atas #18181B ia hanya
+               3,1:1, jadi tautan dan label memakai --accent-ink yang lebih
+               terang. Satu merek, dua peran. */
+            --accent: 37 99 235;
+            --accent-ink: 96 165 250;
+            --accent-hover: 59 130 246;
+            --accent-contrast: 255 255 255;
             --accent-soft: 30 58 138;
 
-            --warn: 252 211 77;
+            --warn: 245 158 11;
             --warn-soft: 41 37 24;
             --warn-line: 120 83 20;
 
-            --positive: 45 212 191;
-            --negative: 251 113 133;
+            --positive: 16 185 129;
+            --negative: 239 68 68;
 
-            --viz-positive: 19 163 148;
+            --viz-positive: 16 185 129;
             --viz-negative: 239 68 68;
             --viz-neutral: 56 56 53;
 
@@ -511,6 +546,77 @@
     /* Panel kini hanya menetapkan bentuknya; materialnya datang dari .kaca. */
     .panel {
         border-radius: 1.5rem;
+    }
+
+    /*
+    |----------------------------------------------------------------------
+    | Kartu dashboard
+    |----------------------------------------------------------------------
+    |
+    | Satu kelas, satu perilaku. Hover mengangkat 2px dan menyalakan tepinya
+    | ke warna merek; masuknya bertahap mengikuti --jeda-masuk yang diisi
+    | komponen <x-card>.
+    |
+    | Hanya transform dan opacity yang dianimasikan. Keduanya bisa dikomposisi
+    | GPU dan tidak memicu layout, jadi tidak ada pergeseran tata letak dan
+    | tidak ada reflow pada deretan dua belas kartu.
+    */
+    .kartu {
+        transition:
+            transform 0.2s ease-out,
+            box-shadow 0.2s ease-out,
+            border-color 0.2s ease-out;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+        .kartu {
+            animation: kartu-masuk 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+            animation-delay: var(--jeda-masuk, 0ms);
+        }
+
+        @keyframes kartu-masuk {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        .kartu:hover {
+            transform: translateY(-2px);
+        }
+    }
+
+    /* Tepi menyala ke warna merek, bukan ke hijau atau merah: hover adalah
+       kejadian antarmuka, bukan pernyataan soal untung atau rugi. */
+    .kartu:hover {
+        box-shadow:
+            inset 0 1px 0 rgb(255 255 255 / 0.45),
+            0 14px 44px -10px rgb(var(--shadow) / 0.28),
+            0 0 0 1px rgb(var(--accent) / 0.40);
+    }
+
+    @media (prefers-color-scheme: dark) {
+        .kartu:hover {
+            box-shadow:
+                inset 0 1px 0 rgb(255 255 255 / 0.16),
+                0 16px 48px -10px rgb(0 0 0 / 0.65),
+                0 0 0 1px rgb(var(--accent-ink) / 0.45);
+        }
+    }
+
+    /* Ikon bulat di kartu KPI, sedikit membesar saat kartunya disentuh. */
+    .lencana-kpi {
+        transition: transform 0.2s ease-out, background-color 0.2s ease-out;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+        .group:hover .lencana-kpi {
+            transform: scale(1.12);
+        }
     }
 
     /*

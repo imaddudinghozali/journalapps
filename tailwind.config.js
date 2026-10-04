@@ -37,6 +37,7 @@ export default {
             colors: {
                 bg: token('bg'),
                 surface: token('surface'),
+                'surface-raised': token('surface-raised'),
                 'surface-sunken': token('surface-sunken'),
                 line: token('line'),
                 'line-strong': token('line-strong'),
@@ -44,6 +45,9 @@ export default {
                 'ink-muted': token('ink-muted'),
                 'ink-faint': token('ink-faint'),
                 accent: token('accent'),
+                // Merek sebagai TEKS. Isian memakai `accent`; di mode gelap
+                // warna isian itu terlalu gelap untuk dibaca sebagai teks.
+                'accent-ink': token('accent-ink'),
                 'accent-hover': token('accent-hover'),
                 'accent-contrast': token('accent-contrast'),
                 'accent-soft': token('accent-soft'),
