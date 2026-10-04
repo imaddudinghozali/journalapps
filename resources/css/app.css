@@ -277,15 +277,225 @@
     | satunya sebenarnya blok.
     |
     */
-    .panel {
-        background: rgb(var(--surface) / 0.72);
-        backdrop-filter: blur(16px) saturate(170%);
-        -webkit-backdrop-filter: blur(16px) saturate(170%);
-        border: 1px solid rgb(var(--line) / 0.9);
-        border-radius: 1rem;
+    /*
+    |----------------------------------------------------------------------
+    | Kaca cair
+    |----------------------------------------------------------------------
+    |
+    | Pendekatan terhadap material "Liquid Glass" iOS. Web tidak punya
+    | material sistem seperti itu, jadi ini disusun dari tiga lapis yang
+    | masing-masing meniru satu gejala optik:
+    |
+    |   1. Badan - backdrop-filter: blur + saturate + brightness. Yang
+    |              membuatnya terbaca sebagai kaca, bukan plastik buram,
+    |              adalah saturate: kaca sungguhan memekatkan warna di
+    |              belakangnya, tidak sekadar mengaburkannya.
+    |   2. Tepi  - cincin conic-gradient (::before). Inilah tanda tangan
+    |              materialnya. Cahaya membelok di tepi lensa, jadi dua sudut
+    |              berseberangan menyala dan dua lainnya meredup. Tanpa lapis
+    |              ini hasilnya cuma panel blur biasa.
+    |   3. Kilau - sapuan diagonal plus sorot yang mengikuti kursor
+    |              (::after). Dipasang di z-index negatif supaya ia berada di
+    |              atas badan kaca tapi di bawah teks. Kalau di atas teks,
+    |              kontrasnya justru turun di bagian yang paling terang.
+    |
+    | Yang TIDAK bisa ditiru: refraksi sungguhan, yaitu konten di belakang
+    | ikut melengkung mengikuti tepi. Itu butuh displacement map, dan
+    | `backdrop-filter: url()` tidak didukung merata - di peramban yang tidak
+    | mendukungnya seluruh deklarasi gugur dan blur-nya ikut hilang.
+    */
+    .kaca,
+    .glass {
+        position: relative;
+        isolation: isolate;
+        background: rgb(var(--surface) / 0.55);
+        backdrop-filter: blur(28px) saturate(200%) brightness(1.06);
+        -webkit-backdrop-filter: blur(28px) saturate(200%) brightness(1.06);
         box-shadow:
-            inset 0 1px 0 rgb(255 255 255 / 0.14),
-            0 8px 32px rgb(var(--shadow) / 0.14);
+            inset 0 1px 0 rgb(255 255 255 / 0.45),
+            inset 0 -12px 28px -20px rgb(var(--shadow) / 0.45),
+            0 10px 36px -8px rgb(var(--shadow) / 0.20),
+            0 2px 8px -2px rgb(var(--shadow) / 0.10);
+    }
+
+    .kaca::before,
+    .glass::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        border-radius: inherit;
+        padding: 1.25px;
+        background: conic-gradient(
+            from 140deg,
+            rgb(255 255 255 / 0.62),
+            rgb(255 255 255 / 0.05) 22%,
+            rgb(255 255 255 / 0.38) 48%,
+            rgb(255 255 255 / 0.04) 74%,
+            rgb(255 255 255 / 0.62)
+        );
+        -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+        mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        pointer-events: none;
+    }
+
+    .kaca::after,
+    .glass::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        border-radius: inherit;
+        background:
+            radial-gradient(
+                24rem circle at var(--mx, -100%) var(--my, -100%),
+                rgb(255 255 255 / 0.18),
+                transparent 60%
+            ),
+            linear-gradient(
+                140deg,
+                rgb(255 255 255 / 0.16) 0%,
+                transparent 38%,
+                transparent 62%,
+                rgb(255 255 255 / 0.07) 100%
+            );
+        pointer-events: none;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        .kaca,
+        .glass {
+            background: rgb(var(--surface) / 0.52);
+            backdrop-filter: blur(28px) saturate(185%) brightness(1.22);
+            -webkit-backdrop-filter: blur(28px) saturate(185%) brightness(1.22);
+            box-shadow:
+                inset 0 1px 0 rgb(255 255 255 / 0.16),
+                inset 0 -12px 28px -20px rgb(0 0 0 / 0.6),
+                0 12px 40px -8px rgb(0 0 0 / 0.55),
+                0 2px 8px -2px rgb(0 0 0 / 0.4);
+        }
+
+        /* Di latar gelap, tepi seterang mode terang terbaca sebagai garis
+           putih, bukan sebagai cahaya yang membelok. */
+        .kaca::before,
+        .glass::before {
+            background: conic-gradient(
+                from 140deg,
+                rgb(255 255 255 / 0.30),
+                rgb(255 255 255 / 0.03) 22%,
+                rgb(255 255 255 / 0.18) 48%,
+                rgb(255 255 255 / 0.02) 74%,
+                rgb(255 255 255 / 0.30)
+            );
+        }
+
+        .kaca::after,
+        .glass::after {
+            background:
+                radial-gradient(
+                    24rem circle at var(--mx, -100%) var(--my, -100%),
+                    rgb(255 255 255 / 0.10),
+                    transparent 60%
+                ),
+                linear-gradient(
+                    140deg,
+                    rgb(255 255 255 / 0.07) 0%,
+                    transparent 38%,
+                    transparent 62%,
+                    rgb(255 255 255 / 0.03) 100%
+                );
+        }
+    }
+
+    /* Transparansi dimatikan: permukaan padat, seluruh lapis optiknya
+       dilepas. Kaca tanpa apa pun di belakangnya cuma gradien yang
+       membingungkan. */
+    @media (prefers-reduced-transparency: reduce) {
+        .kaca,
+        .glass {
+            background: rgb(var(--surface));
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            border: 1px solid rgb(var(--line));
+        }
+
+        .kaca::before,
+        .kaca::after,
+        .glass::before,
+        .glass::after {
+            display: none;
+        }
+    }
+
+    @supports not (backdrop-filter: blur(1px)) {
+        .kaca,
+        .glass {
+            background: rgb(var(--surface));
+            border: 1px solid rgb(var(--line));
+        }
+
+        .kaca::after,
+        .glass::after {
+            display: none;
+        }
+    }
+
+    /* Panel kini hanya menetapkan bentuknya; materialnya datang dari .kaca. */
+    .panel {
+        border-radius: 1.5rem;
+    }
+
+    /*
+    | Tombol berwarna: kaca yang diberi warna, bukan kotak berwarna rata.
+    | Warnanya tetap pekat supaya kontras tulisannya aman - yang dipinjam dari
+    | kaca cuma kilau tepinya, bukan transparansinya.
+    */
+    .tombol-aksen,
+    .tombol-bahaya {
+        position: relative;
+        isolation: isolate;
+        transition: filter 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .tombol-aksen {
+        background: rgb(var(--accent));
+        box-shadow:
+            inset 0 1px 0 rgb(255 255 255 / 0.30),
+            inset 0 -2px 6px -2px rgb(0 0 0 / 0.30),
+            0 4px 14px -4px rgb(var(--accent) / 0.55);
+    }
+
+    .tombol-bahaya {
+        background: rgb(var(--negative));
+        box-shadow:
+            inset 0 1px 0 rgb(255 255 255 / 0.30),
+            inset 0 -2px 6px -2px rgb(0 0 0 / 0.30),
+            0 4px 14px -4px rgb(var(--negative) / 0.55);
+    }
+
+    .tombol-aksen:hover,
+    .tombol-bahaya:hover {
+        filter: brightness(1.08);
+    }
+
+    .tombol-aksen:active,
+    .tombol-bahaya:active {
+        filter: brightness(0.95);
+    }
+
+    /* Kilau diagonal yang sama seperti pada panel, supaya tombol dan panel
+       terbaca terbuat dari bahan yang sama. */
+    .tombol-aksen::after,
+    .tombol-bahaya::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        border-radius: inherit;
+        background: linear-gradient(140deg, rgb(255 255 255 / 0.22), transparent 46%);
+        pointer-events: none;
     }
 
     /*
@@ -423,62 +633,37 @@
         }
     }
 
-    /* Cahaya ambient di belakang konten. Radial, bukan linear 45 derajat. */
+    /*
+    | Cahaya ambient di belakang konten.
+    |
+    | Lapis ini bukan hiasan - ia prasyarat. Kaca hanya terbaca sebagai kaca
+    | kalau ada sesuatu di belakangnya yang bisa dikaburkan dan dipekatkan
+    | warnanya. Di atas latar rata, backdrop-filter tidak punya bahan apa pun
+    | untuk diolah dan panelnya jatuh jadi kotak transparan biasa.
+    |
+    | Karena itu empat kutub warna, bukan dua, dan dipasang jauh lebih pekat
+    | daripada versi sebelumnya. Sebarannya tetap radial dan lembut, jadi
+    | tidak ada tepi gradien yang terlihat di belakang teks.
+    */
     .ambient {
         position: fixed;
         inset: 0;
         z-index: -1;
         pointer-events: none;
         background:
-            radial-gradient(60rem 40rem at 12% -10%, rgb(var(--accent) / 0.10), transparent 60%),
-            radial-gradient(45rem 35rem at 92% 8%, rgb(var(--viz-positive) / 0.07), transparent 62%);
+            radial-gradient(55rem 38rem at 8% -8%, rgb(var(--accent) / 0.26), transparent 58%),
+            radial-gradient(48rem 34rem at 96% 2%, rgb(var(--viz-positive) / 0.20), transparent 60%),
+            radial-gradient(42rem 42rem at 78% 68%, rgb(var(--accent) / 0.14), transparent 62%),
+            radial-gradient(38rem 30rem at 18% 92%, rgb(var(--viz-negative) / 0.10), transparent 60%);
     }
 
     @media (prefers-color-scheme: dark) {
         .ambient {
             background:
-                radial-gradient(60rem 40rem at 12% -10%, rgb(var(--accent) / 0.16), transparent 60%),
-                radial-gradient(45rem 35rem at 92% 8%, rgb(var(--viz-positive) / 0.10), transparent 62%);
-        }
-    }
-
-    /*
-    | Kaca: blur ditambah satu garis dalam dan pantulan tepi, bukan sekadar
-    | backdrop-blur. Tanpa dua lapisan terakhir, hasilnya terbaca sebagai
-    | panel buram biasa.
-    */
-    .glass {
-        background: rgb(var(--surface) / 0.72);
-        backdrop-filter: blur(16px) saturate(170%);
-        -webkit-backdrop-filter: blur(16px) saturate(170%);
-        border: 1px solid rgb(var(--line) / 0.9);
-        box-shadow:
-            inset 0 1px 0 rgb(255 255 255 / 0.14),
-            0 8px 32px rgb(var(--shadow) / 0.14);
-    }
-
-    @media (prefers-color-scheme: dark) {
-        .glass {
-            background: rgb(var(--surface) / 0.62);
-            box-shadow:
-                inset 0 1px 0 rgb(255 255 255 / 0.07),
-                0 8px 32px rgb(0 0 0 / 0.45);
-        }
-    }
-
-    /* Dukungan backdrop-filter tidak merata, dan sebagian orang mematikan
-       transparansi. Keduanya mendapat permukaan padat. */
-    @media (prefers-reduced-transparency: reduce) {
-        .glass {
-            background: rgb(var(--surface));
-            backdrop-filter: none;
-            -webkit-backdrop-filter: none;
-        }
-    }
-
-    @supports not (backdrop-filter: blur(1px)) {
-        .glass {
-            background: rgb(var(--surface));
+                radial-gradient(55rem 38rem at 8% -8%, rgb(var(--accent) / 0.30), transparent 58%),
+                radial-gradient(48rem 34rem at 96% 2%, rgb(var(--viz-positive) / 0.20), transparent 60%),
+                radial-gradient(42rem 42rem at 78% 68%, rgb(var(--accent) / 0.18), transparent 62%),
+                radial-gradient(38rem 30rem at 18% 92%, rgb(var(--viz-negative) / 0.12), transparent 60%);
         }
     }
 

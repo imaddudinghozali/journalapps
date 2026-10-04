@@ -29,7 +29,7 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans antialiased">
+    <body class="font-sans antialiased bg-bg text-ink">
         <div class="ambient" aria-hidden="true"></div>
         <div class="grain" aria-hidden="true"></div>
 
@@ -37,15 +37,20 @@
            class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[70] focus:rounded-md focus:bg-accent focus:px-4 focus:py-2 focus:text-accent-contrast">
             Lompat ke konten
         </a>
-        <div class="min-h-screen bg-bg">
+        {{-- Tanpa bg-bg di sini. Warna latar pindah ke <body>, karena
+             pembungkus berlatar padat akan menutupi lapisan .ambient dan
+             membuat seluruh kaca kehilangan bahan untuk dikaburkan. --}}
+        <div class="min-h-screen">
             <livewire:layout.navigation />
 
             <!-- Page Heading -->
+            {{-- Tanpa permukaan sendiri. Navigasi di atasnya sekarang
+                 mengambang, dan bilah padat yang menempel tepat di bawahnya
+                 akan menutup justru apa yang membuat kaca itu terbaca:
+                 konten yang lewat di belakangnya. --}}
             @if (isset($header))
-                <header class="bg-surface shadow">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                        {{ $header }}
-                    </div>
+                <header class="max-w-7xl mx-auto px-4 pt-8 pb-2 sm:px-6 lg:px-8">
+                    {{ $header }}
                 </header>
             @endif
 

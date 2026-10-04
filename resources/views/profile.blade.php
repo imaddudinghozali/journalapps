@@ -10,7 +10,7 @@
             {{-- Ambang kepatuhan naik ke atas: ini satu-satunya pengaturan yang
                  mengubah perilaku aplikasi. Nama, email, dan sandi adalah
                  kelengkapan akun yang jarang disentuh. --}}
-            <div class="panel spotlight p-4 sm:p-8">
+            <div class="kaca panel p-4 sm:p-8">
                 <div class="max-w-xl">
                     <livewire:profile.update-compliance-threshold-form />
                 </div>

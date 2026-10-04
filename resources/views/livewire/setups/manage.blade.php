@@ -310,7 +310,7 @@ new class extends Component
     @if ($this->selectedSetup)
         {{-- Panel: di halaman ini, menyusun rules adalah pekerjaannya. Dua
              blok di atas cuma jalan menuju ke sini. --}}
-        <div class="panel spotlight pop p-4 sm:p-8" wire:key="panel-{{ $selectedSetupId }}">
+        <div class="kaca panel pop p-4 sm:p-8" wire:key="panel-{{ $selectedSetupId }}">
             <header>
                 <h2 class="text-lg font-medium text-ink">Rules: {{ $this->selectedSetup->name }}</h2>
                 <p class="mt-1 text-sm text-ink-muted">

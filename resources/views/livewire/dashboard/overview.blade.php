@@ -172,7 +172,7 @@ new class extends Component
          Karena itu ia yang jadi panel, dan ringkasan di bawahnya turun jadi
          blok - dua panel bersebelahan berarti tidak ada yang diutamakan. --}}
     @if ($this->openTrades->isNotEmpty())
-        <section class="panel spotlight border-l-2 border-l-accent p-4 sm:p-6" aria-labelledby="judul-terbuka">
+        <section class="kaca panel border-l-2 border-l-accent p-4 sm:p-6" aria-labelledby="judul-terbuka">
             <header class="flex flex-wrap items-baseline justify-between gap-2">
                 <h2 id="judul-terbuka" class="text-lg font-medium text-ink">Posisi terbuka</h2>
                 <span class="text-sm text-ink-faint tabular">{{ $this->openTrades->count() }} posisi</span>

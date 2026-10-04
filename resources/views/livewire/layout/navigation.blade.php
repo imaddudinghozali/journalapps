@@ -16,9 +16,17 @@ new class extends Component
     }
 }; ?>
 
-<nav x-data="{ open: false }" class="glass sticky top-0 z-50 border-x-0 border-t-0">
+{{-- Bilah mengambang, bukan menempel di tepi atas. Inilah yang membuat kaca
+     terbaca sebagai kaca: ia butuh sesuatu di belakangnya untuk dikaburkan,
+     dan konten yang lewat di bawahnya memberi itu. Menempel rata di tepi,
+     yang di belakangnya cuma latar halaman - hasilnya tak beda dari panel
+     buram. --}}
+<nav x-data="{ open: false }" class="sticky top-0 z-50 px-3 pt-3 sm:px-4 sm:pt-4">
+  {{-- overflow-hidden supaya menu responsif yang membuka di dalamnya ikut
+       mengikuti lengkung bilahnya, bukan menyembul bersudut siku. --}}
+  <div class="kaca mx-auto max-w-7xl overflow-hidden rounded-[1.75rem]">
     <!-- Primary Navigation Menu -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="px-4 sm:px-6">
         <div class="flex justify-between h-16">
             <div class="flex">
                 <!-- Logo -->
@@ -153,4 +161,5 @@ new class extends Component
             </div>
         </div>
     </div>
+  </div>
 </nav>

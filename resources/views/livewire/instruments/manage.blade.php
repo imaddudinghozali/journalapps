@@ -105,7 +105,7 @@ new class extends Component
 
 <div class="space-y-6">
     {{-- Panel: satu-satunya aksi di halaman ini. --}}
-    <div class="panel spotlight p-4 sm:p-8">
+    <div class="kaca panel p-4 sm:p-8">
         <div class="max-w-xl">
             <header>
                 <h2 class="text-lg font-medium text-ink">Instrumen baru</h2>

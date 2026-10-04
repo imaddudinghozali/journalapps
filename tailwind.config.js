@@ -13,6 +13,17 @@ export default {
 
     theme: {
         extend: {
+            // Sudut dibuat lebih lembut menyeluruh. 41 tempat memakai
+            // `rounded-md`; menaikkan skalanya di sini mengubah semuanya
+            // sekaligus tanpa menyentuh satu pun berkas Blade, dan menjaga
+            // perbandingan antar tingkat tetap konsisten.
+            borderRadius: {
+                md: '0.625rem',
+                lg: '0.875rem',
+                xl: '1.125rem',
+                '2xl': '1.5rem',
+                '3xl': '2rem',
+            },
             boxShadow: {
                 // Bayangan mengambil warna latar, bukan hitam murni.
                 soft: '0 1px 2px rgb(var(--shadow) / 0.06), 0 4px 12px rgb(var(--shadow) / 0.08)',
