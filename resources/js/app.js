@@ -72,7 +72,63 @@ if (! KURANGI_GERAK.matches) {
 | Di bawah prefers-reduced-motion angkanya langsung ditulis apa adanya, tanpa
 | satu bingkai animasi pun.
 */
+/*
+|--------------------------------------------------------------------------
+| Crosshair dan tooltip pada kurva
+|--------------------------------------------------------------------------
+|
+| Titik terdekat dicari dari posisi kursor pada sumbu x saja, bukan jarak dua
+| dimensi. Pada kurva, yang ingin dibaca orang selalu "apa yang terjadi pada
+| tanggal ini" - bukan titik mana yang paling dekat secara geometri. Jarak dua
+| dimensi membuat kursor di atas lembah melompat ke titik sebelahnya yang
+| kebetulan lebih dekat secara vertikal.
+|
+| Koordinat titik datang dalam satuan viewBox SVG, sedangkan kursor dalam
+| piksel layar. Keduanya dijembatani sekali di sini, bukan di dalam template.
+*/
 document.addEventListener('alpine:init', () => {
+    window.Alpine.data('kurvaSorot', (titik, lebarViewBox) => ({
+        aktif: null,
+        garisX: 0,
+        gayaTooltip: '',
+
+        arahkan(e) {
+            if (titik.length === 0) {
+                return;
+            }
+
+            const kotak = this.$el.getBoundingClientRect();
+            const xViewBox = ((e.clientX - kotak.left) / kotak.width) * lebarViewBox;
+
+            let dekat = titik[0];
+            let jarak = Infinity;
+
+            for (const t of titik) {
+                const d = Math.abs(t.x - xViewBox);
+
+                if (d < jarak) {
+                    jarak = d;
+                    dekat = t;
+                }
+            }
+
+            this.aktif = dekat;
+            this.garisX = dekat.x;
+
+            // Tooltip ditahan di dalam kartu: di dekat tepi kanan ia digeser
+            // ke kiri, kalau tidak sebagiannya terpotong.
+            const px = (dekat.x / lebarViewBox) * kotak.width;
+            const lebarTooltip = 176;
+            const kiri = Math.min(Math.max(px + 14, 0), Math.max(kotak.width - lebarTooltip, 0));
+
+            this.gayaTooltip = `left:${kiri}px;top:4px`;
+        },
+
+        lepas() {
+            this.aktif = null;
+        },
+    }));
+
     window.Alpine.data('angkaNaik', (tujuan, opsi = {}) => ({
         nilai: 0,
 

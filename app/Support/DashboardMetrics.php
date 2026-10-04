@@ -130,6 +130,50 @@ final class DashboardMetrics
         ];
     }
 
+    /**
+     * Skor Disiplin, disusun dari angka yang sudah dihitung di atas.
+     *
+     * Dihitung saat diminta, bukan di konstruktor, supaya halaman yang tidak
+     * menampilkan kartunya tidak ikut membayar biayanya.
+     */
+    public function disiplin(): DisciplineScore
+    {
+        $skor = [];
+
+        foreach ($this->cumulativeR as $titik) {
+            if ($titik['score'] !== null) {
+                $skor[] = (int) $titik['score'];
+            }
+        }
+
+        return DisciplineScore::from($skor, $this->profitFactor, $this->winRate);
+    }
+
+    /**
+     * Rata-rata kepatuhan per tanggal, untuk mewarnai sel kalender.
+     *
+     * Diturunkan dari cumulativeR yang sudah memuat tanggal dan skor tiap
+     * trade, jadi tidak ada kueri tambahan dan tidak mungkin menyimpang dari
+     * angka yang dipakai grafik.
+     *
+     * @return array<string, int>
+     */
+    public function kepatuhanHarian(): array
+    {
+        $per = [];
+
+        foreach ($this->cumulativeR as $titik) {
+            if ($titik['score'] !== null) {
+                $per[$titik['date']][] = (int) $titik['score'];
+            }
+        }
+
+        return array_map(
+            fn (array $s) => (int) round(array_sum($s) / count($s)),
+            $per,
+        );
+    }
+
     /** @param  Collection<int, Trade>  $tertutup */
     private static function rataKepatuhan(Collection $tertutup): ?int
     {

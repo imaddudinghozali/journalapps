@@ -96,9 +96,22 @@ it('tidak mencampur trade tertutup ke dalam daftar posisi terbuka', function () 
     $this->actingAs($u);
     $s = TradingSetup::factory()->for($u)->create();
 
-    posisi($u, $s, 'XAUUSD', null, '2026-04-01 09:00:00');
-    $tertutup = posisi($u, $s, 'BTCUSD', 300.0, '2026-04-02 09:00:00');
+    $terbuka = posisi($u, $s, 'XAUUSD', null, '2026-04-01 09:00:00');
+    posisi($u, $s, 'BTCUSD', 300.0, '2026-04-02 09:00:00');
 
-    Volt::test('dashboard.overview')
-        ->assertDontSee(route('trades.edit', $tertutup), escape: false);
+    /*
+    | Diperiksa langsung pada daftarnya, bukan lewat ketiadaan tautan di
+    | seluruh halaman.
+    |
+    | Versi pertama test ini memastikan URL trade tertutup TIDAK muncul di
+    | mana pun di dashboard. Itu proksi yang benar selama dashboard cuma
+    | berisi posisi terbuka, dan berhenti benar begitu kartu "Trade terakhir"
+    | ditambahkan - kartu itu memang seharusnya menautkan trade tertutup.
+    |
+    | Maksud yang dijaga tetap sama dan sekarang diperiksa apa adanya: daftar
+    | posisi terbuka berisi tepat posisi yang masih terbuka.
+    */
+    $daftar = Volt::test('dashboard.overview')->instance()->openTrades;
+
+    expect($daftar->pluck('id')->all())->toBe([$terbuka->id]);
 });

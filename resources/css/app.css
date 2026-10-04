@@ -146,6 +146,13 @@
         @apply bg-bg text-ink;
     }
 
+    /* Elemen yang baru boleh tampil setelah Alpine mengambil alih. Tanpa
+       aturan ini, tooltip dan crosshair berkedip muncul sekejap pada tiap
+       pemuatan halaman sebelum Alpine sempat menyembunyikannya. */
+    [x-cloak] {
+        display: none !important;
+    }
+
 
     /*
     | Kontrol form disetel eksplisit, tidak mengandalkan color-scheme saja.
