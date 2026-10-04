@@ -42,7 +42,13 @@ new class extends Component
                 {{-- Ikon Phosphor berat reguler, satu keluarga di seluruh
                      aplikasi. Teksnya tetap ada: ikon mempercepat pemindaian,
                      ia tidak menggantikan label. --}}
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                {{-- lg, bukan sm. Deretan lengkap ini butuh 889px: lima link
+                     plus dropdown profil. Pada sm (640px) ia muncul jauh
+                     sebelum ruangnya ada, dan seluruh halaman jadi bisa
+                     digeser ke samping di rentang 640-889px - persis lebar
+                     iPad potret (820 dan 834). Hamburger di bawah sudah
+                     menangani rentang itu dengan baik. --}}
+                <div class="hidden space-x-8 lg:-my-px lg:ms-10 lg:flex">
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="gap-2" wire:navigate>
                         <x-phosphor-gauge class="h-4 w-4 shrink-0" aria-hidden="true" />
                         {{ __('Dashboard') }}
@@ -67,7 +73,7 @@ new class extends Component
             </div>
 
             <!-- Settings Dropdown -->
-            <div class="hidden sm:flex sm:items-center sm:ms-6">
+            <div class="hidden lg:flex lg:items-center lg:ms-6">
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-ink-faint bg-surface hover:text-ink-muted focus:outline-none transition ease-in-out duration-150">
@@ -93,7 +99,7 @@ new class extends Component
             </div>
 
             <!-- Hamburger -->
-            <div class="-me-2 flex items-center sm:hidden">
+            <div class="-me-2 flex items-center lg:hidden">
                 {{-- Dua ikon yang saling bergantian, bukan satu svg dua path:
                      path buatan tangan tadi berasal dari keluarga ikon yang
                      berbeda dan tebal garisnya tidak cocok dengan Phosphor. --}}
@@ -108,7 +114,7 @@ new class extends Component
     </div>
 
     <!-- Responsive Navigation Menu -->
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden overflow-hidden rounded-b-[1.75rem] sm:hidden">
+    <div :class="{'block': open, 'hidden': ! open}" class="hidden overflow-hidden rounded-b-[1.75rem] lg:hidden">
         <div class="px-2 pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate>
                 <span class="flex items-center gap-3">

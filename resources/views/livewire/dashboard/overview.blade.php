@@ -485,7 +485,14 @@ new class extends Component
             @foreach (['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'] as $hari)
                 <div class="bg-surface-sunken px-2 py-2 text-center text-xs font-medium text-ink-muted">{{ $hari }}</div>
             @endforeach
-            <div class="bg-surface-sunken px-2 py-2 text-center text-xs font-medium text-ink-muted">Minggu</div>
+            {{-- "Minggu" butuh 50px, kolomnya cuma 42px di ponsel. Disingkat
+                 di layar sempit, dan teks panjangnya tetap diumumkan ke
+                 pembaca layar lewat sr-only. --}}
+            <div class="bg-surface-sunken px-2 py-2 text-center text-xs font-medium text-ink-muted">
+                <span aria-hidden="true" class="lg:hidden">Tot</span>
+                <span aria-hidden="true" class="hidden lg:inline">Minggu</span>
+                <span class="sr-only">Total mingguan</span>
+            </div>
 
             @foreach ($this->calendarWeeks() as $iMinggu => $minggu)
                 @foreach ($minggu['days'] as $sel)
@@ -508,7 +515,7 @@ new class extends Component
                             @if ($adaTrade) wire:click="pilihTanggal('{{ $sel['key'] }}')" @else disabled @endif
                             class="relative min-h-[84px] p-2 text-start transition-colors {{ $latar }} {{ $sel['inMonth'] ? '' : 'opacity-40' }} {{ $adaTrade ? 'cursor-pointer hover:bg-surface-raised' : 'cursor-default' }} {{ $terpilih ? 'ring-2 ring-inset ring-accent' : '' }}"
                             wire:key="sel-{{ $sel['key'] }}"
-                            @if ($adaTrade) aria-label="{{ $sel['key'] }}, {{ $sel['count'] }} trade" @endif>
+                            @if ($adaTrade) aria-label="{{ $sel['key'] }}, {{ $sel['count'] }} trade, {{ Angka::uang((float) $p, true) }}@if ($sel['score'] !== null), kepatuhan {{ $sel['score'] }}%@endif" @endif>
                         <div class="flex items-center justify-end gap-1">
                             @if ($sel['date']->isToday())
                                 {{-- Hari ini ditandai titik, bukan latar berwarna:
@@ -521,10 +528,20 @@ new class extends Component
                         </div>
 
                         @if ($adaTrade)
-                            <div class="mt-1 text-sm font-semibold tabular {{ Angka::nada((float) $p) }}">
+                            {{-- Di bawah lg, sel ini cuma selebar 26px isi,
+                                 sementara +$320.00 butuh 64px. Sebelumnya
+                                 angkanya terpotong diam-diam oleh
+                                 overflow-hidden milik grid dan terbaca "+$3".
+                                 Angka yang terpotong lebih buruk daripada
+                                 angka yang tidak ditampilkan, jadi di layar
+                                 sempit ia diganti titik arah dan jumlah
+                                 trade. Nominalnya tetap satu sentuhan jauhnya
+                                 lewat ringkasan harian, dan aria-label tombol
+                                 ini membawanya utuh di lebar mana pun. --}}
+                            <div class="mt-1 hidden text-sm font-semibold tabular lg:block {{ Angka::nada((float) $p) }}">
                                 {{ Angka::uang((float) $p, true) }}
                             </div>
-                            <div class="flex items-center gap-1.5 text-[11px] text-ink-faint">
+                            <div class="hidden items-center gap-1.5 text-[11px] text-ink-faint lg:flex">
                                 @if ($sel['score'] !== null)
                                     <span class="h-1.5 w-1.5 shrink-0 rounded-full"
                                           style="background: {{ ComplianceTone::ringColor($sel['score']) }}"
@@ -534,6 +551,19 @@ new class extends Component
                                     <span>{{ $sel['count'] }} trade</span>
                                 @endif
                             </div>
+
+                            {{-- Ringkas untuk layar sempit: arah hasil sebagai
+                                 titik, jumlah trade sebagai angka telanjang.
+                                 Titik kepatuhan tetap dipisah supaya dua arti
+                                 yang berbeda tidak dipaksa jadi satu warna. --}}
+                            <div class="mt-1 flex items-center gap-1 lg:hidden" aria-hidden="true">
+                                <span class="h-1.5 w-1.5 shrink-0 rounded-full {{ $p > 0 ? 'bg-viz-positive' : ($p < 0 ? 'bg-viz-negative' : 'bg-line-strong') }}"></span>
+                                @if ($sel['score'] !== null)
+                                    <span class="h-1.5 w-1.5 shrink-0 rounded-full"
+                                          style="background: {{ ComplianceTone::ringColor($sel['score']) }}"></span>
+                                @endif
+                                <span class="tabular text-[11px] text-ink-muted">{{ $sel['count'] }}</span>
+                            </div>
                         @endif
                     </button>
                 @endforeach
@@ -542,12 +572,24 @@ new class extends Component
                      dipakai orang saat meninjau: cukup panjang untuk meredam
                      keberuntungan harian, cukup pendek untuk masih diingat. --}}
                 <div class="min-h-[84px] bg-surface-sunken p-2" wire:key="minggu-{{ $iMinggu }}">
-                    <div class="text-right text-[11px] text-ink-faint">M{{ $iMinggu + 1 }}</div>
+                    <div class="text-right text-[11px] text-ink-faint" aria-hidden="true">M{{ $iMinggu + 1 }}</div>
                     @if ($minggu['pnl'] !== null)
-                        <div class="mt-1 text-sm font-semibold tabular {{ Angka::nada((float) $minggu['pnl']) }}">
+                        {{-- Perlakuan sama dengan sel harian: nominal penuh
+                             baru muncul di lg, karena di bawah itu ia
+                             terpotong. Bedanya kolom ini bukan tombol, jadi
+                             tidak ada aria-label yang bisa menampung angkanya
+                             - teks sr-only di bawah yang memikulnya. --}}
+                        <div class="mt-1 hidden text-sm font-semibold tabular lg:block {{ Angka::nada((float) $minggu['pnl']) }}">
                             {{ Angka::uang((float) $minggu['pnl'], true) }}
                         </div>
-                        <div class="text-[11px] text-ink-faint">{{ $minggu['count'] }} trade</div>
+                        <div class="hidden text-[11px] text-ink-faint lg:block">{{ $minggu['count'] }} trade</div>
+
+                        <div class="mt-1 flex items-center gap-1 lg:hidden" aria-hidden="true">
+                            <span class="h-1.5 w-1.5 shrink-0 rounded-full {{ $minggu['pnl'] > 0 ? 'bg-viz-positive' : ($minggu['pnl'] < 0 ? 'bg-viz-negative' : 'bg-line-strong') }}"></span>
+                            <span class="tabular text-[11px] text-ink-muted">{{ $minggu['count'] }}</span>
+                        </div>
+
+                        <span class="sr-only">Minggu {{ $iMinggu + 1 }}, {{ $minggu['count'] }} trade, {{ Angka::uang((float) $minggu['pnl'], true) }}</span>
                     @endif
                 </div>
             @endforeach
