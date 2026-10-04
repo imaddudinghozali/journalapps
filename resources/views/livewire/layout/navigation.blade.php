@@ -22,9 +22,11 @@ new class extends Component
      yang di belakangnya cuma latar halaman - hasilnya tak beda dari panel
      buram. --}}
 <nav x-data="{ open: false }" class="sticky top-0 z-50 px-3 pt-3 sm:px-4 sm:pt-4">
-  {{-- overflow-hidden supaya menu responsif yang membuka di dalamnya ikut
-       mengikuti lengkung bilahnya, bukan menyembul bersudut siku. --}}
-  <div class="kaca mx-auto max-w-7xl overflow-hidden rounded-[1.75rem]">
+  {{-- TANPA overflow-hidden. Dropdown profil diposisikan absolute di dalam
+       bilah ini, jadi memotong luapan ikut memotong menunya sampai hilang
+       sama sekali - termasuk tombol keluar. Lengkung menu responsif diurus
+       pembungkusnya sendiri di bawah. --}}
+  <div class="kaca mx-auto max-w-7xl rounded-[1.75rem]">
     <!-- Primary Navigation Menu -->
     <div class="px-4 sm:px-6">
         <div class="flex justify-between h-16">
@@ -106,8 +108,8 @@ new class extends Component
     </div>
 
     <!-- Responsive Navigation Menu -->
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
-        <div class="pt-2 pb-3 space-y-1">
+    <div :class="{'block': open, 'hidden': ! open}" class="hidden overflow-hidden rounded-b-[1.75rem] sm:hidden">
+        <div class="px-2 pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate>
                 <span class="flex items-center gap-3">
                     <x-phosphor-gauge class="h-5 w-5 shrink-0" aria-hidden="true" />
